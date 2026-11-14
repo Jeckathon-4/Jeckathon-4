@@ -145,6 +145,8 @@ document.querySelectorAll('#v4 .ghostBtn').forEach((b) => { if (b.textContent.tr
 
 // ---- BGM: 기도관 = 긴장, 끝난 뒤 결과·추모관 = 시나리오별(패배 오르간 / 승리 클럽 / 무승부 막차) ----
 let paused = false;
+// 숨겨진 화면은 터치를 받을 수 없음 → 터치가 오면 보이는 화면이므로 일시정지 해제 (복귀 시 resume 누락 대비)
+window.addEventListener('pointerdown', () => { if (paused) { paused = false; navigating = false; updateBgm(); } }, true);
 function updateBgm() {
   if (!window.BGM) return;
   if (paused) { BGM.play(null); return; }
