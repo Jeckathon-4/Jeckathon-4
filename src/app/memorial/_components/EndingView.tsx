@@ -158,7 +158,7 @@ export function EndingView({
             <div className="sceneBase" />
             <div className="sceneLabel">
               <div className="emoji">🕯️</div>
-              <div className="line1">오늘의 승리</div>
+              <div className="line1">오늘의 패배</div>
             </div>
             <div className="flowerField">
               {mood === 'loss' &&
