@@ -160,18 +160,19 @@ style.textContent += `.bgmToggle{margin-left:auto;margin-right:8px;background:no
 
 // ---- 첫 진입 스플래시: 로고가 떴다가 서서히 사라지며 팀 선택 화면 등장 (세션당 1회) ----
 (function splash() {
+  // 페이지를 새로 열 때마다 1회 (앱 안에서 메인으로 돌아올 땐 생략). 부모 창 변수는 새로고침 시 초기화됨
   let seen = false;
-  try { seen = sessionStorage.getItem('sky-splash') === '1'; sessionStorage.setItem('sky-splash', '1'); } catch {}
+  try { seen = !!parent.__skySplashSeen; parent.__skySplashSeen = true; } catch {}
   if (screenParam !== 'home' || seen) return;
   const el = document.createElement('div');
   el.className = 'splash';
   el.innerHTML = '<div class="splashMark">☁️</div><div class="splashName">하늘아<br><span>눈치 챙겨</span></div><div class="splashSub">야구 지는 날, 우리는 하늘에 빕니다</div>';
   (document.getElementById('phoneInner') || document.body).appendChild(el);
-  setTimeout(() => el.classList.add('out'), 1500);
-  setTimeout(() => el.remove(), 2300);
+  setTimeout(() => el.classList.add('out'), 3000);
+  setTimeout(() => el.remove(), 4100);
 })();
-style.textContent += `.splash{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 38%,#24375a 0%,#111b2d 62%);color:#eef3fb;text-align:center;transition:opacity .8s ease,transform .8s ease}
-.splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+style.textContent += `.splash{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 38%,#24375a 0%,#111b2d 62%);color:#eef3fb;text-align:center;transition:opacity 1s ease,filter 1s ease}
+.splash.out{opacity:0;filter:brightness(.25);pointer-events:none}
 .splashMark{font-size:64px;animation:splashIn .9s cubic-bezier(.2,.8,.2,1) both}
 .splashName{font-size:38px;font-weight:950;letter-spacing:-.05em;line-height:1.15;animation:splashIn .9s .15s cubic-bezier(.2,.8,.2,1) both}.splashName span{color:#ffce77}
 .splashSub{font-size:12px;color:#9fb3cf;animation:splashIn .9s .35s cubic-bezier(.2,.8,.2,1) both}
