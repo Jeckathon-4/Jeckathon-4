@@ -1,5 +1,5 @@
 // 원본 프로토타입(v10) 4·5페이지 연출 계산. 화면 표시용이며 서버에 저장하지 않는다.
-export type Mood = 'loss' | 'win';
+export type Mood = 'loss' | 'win' | 'draw';
 
 /** 연타 간격 (ms) */
 export const TAP_DELAY = 300;
@@ -36,19 +36,29 @@ export function sceneQuery(roomId: string, team: number, result?: Scenario, my?:
   return q.toString();
 }
 
-/** 무승부 공간은 제외했으므로 이기지 못하면(동점 포함) 추모관 */
 export function moodOf(myScore: number, oppScore: number): Mood {
-  return myScore > oppScore ? 'win' : 'loss';
+  if (myScore < oppScore) return 'loss';
+  if (myScore > oppScore) return 'win';
+  return 'draw';
 }
 
 /** 공유된 헌화 수로 꽃 배치를 결정적으로 만든다 (모든 기기에서 같은 모양) */
+/** 차분하게 정렬된 헌화 배치: 5송이씩 줄을 맞춰 아래부터 쌓고(엇갈린 벽돌 배열), 7줄이 차면 조금 옮겨 다음 층 */
+const COLS = 5;
+const ROWS = 7;
 export function tributeLayout(i: number) {
+  const layer = Math.floor(i / (COLS * ROWS));
+  const j = i % (COLS * ROWS);
+  const row = Math.floor(j / COLS);
+  const col = j % COLS;
   return {
-    x: 8 + ((i * 0.61803398875) % 1) * 77,
-    y: Math.min(78, 10 + Math.floor(i / 9) * 11 + ((i * 7) % 15)),
-    size: 0.68 + (i % 9) * 0.05,
-    rotation: -53 + ((i * 29) % 107),
+    x: 6 + col * 15 + (row % 2) * 7.5 + (layer % 3) * 3,
+    y: 30 + row * 6.5 + (layer % 3) * 2,
+    size: 1,
+    rotation: -12,
     seed: i * 7.31,
+    // 아래 줄이 앞에 보이도록
+    z: layer * 100 + (ROWS - row) * 10 + col,
   };
 }
 
@@ -94,6 +104,28 @@ export function dancerStyle(i: number) {
   } as React.CSSProperties;
 }
 
+const SHIRTS = ['#9aa6b8', '#899b83', '#ba9d8b', '#8397ad', '#a589a8', '#c4a368', '#8497a0'];
+const SKINS = ['#f1c9a7', '#cf9e7b', '#e7b58c', '#c99172'];
+const HAIRS = ['#282b31', '#4c3831', '#333842'];
+/** 무승부 대합실: 누를수록 지친 팬이 뒤에서부터 한 명씩 남는다 (8명마다 새 줄) */
+export function waitingPersonStyle(i: number) {
+  const x = 12 + ((i * 0.61803398875) % 1) * 76;
+  const row = Math.floor(i / 8);
+  const bottom = 33 - Math.min(row, 5) * 5 + (i % 3) * 2;
+  return {
+    '--left': `${x.toFixed(2)}%`,
+    '--bottom': `${Math.max(7, bottom)}%`,
+    '--scale': (0.72 + Math.min(row, 6) * 0.13 + (i % 4) * 0.035).toFixed(2),
+    '--z': String(10 + row),
+    '--skin': SKINS[i % SKINS.length],
+    '--hair': HAIRS[i % 3],
+    '--shirt': SHIRTS[i % SHIRTS.length],
+    '--lean': `${[-8, 6, 12, -12][i % 4]}deg`,
+    '--beat': `${(i % 5) * 0.3}s`,
+  } as React.CSSProperties;
+}
+
+export const SIGH_WORDS = ['하...', '에휴', '집에 가자...', '아...', '그냥 집 가자', '내 시간...'];
 export const FIREWORK_COLORS = ['#ff4dcc', '#45dfff', '#ffe979', '#a0ffb0', '#ffffff'];
 
 export const ENDING_COPY: Record<
@@ -102,9 +134,11 @@ export const ENDING_COPY: Record<
 > = {
   loss: { chip: '패배 추모관', mood: '허무', button: '💐', label: '헌화하기', unit: '송이', placeholder: '꽃과 함께 한마디 (선택)' },
   win: { chip: '승리 클럽', mood: '환호', button: '🕺', label: '댄서 추가', unit: '명', placeholder: '오늘의 한마디 (선택)' },
+  draw: { chip: '무승부 · 심야 대합실', mood: '한숨', button: '🚶', label: '집에 가기', unit: '명', placeholder: '한숨 한마디 (선택)' },
 };
 
 export const RESULT_COPY: Record<Mood, { emoji: string; title: string; desc: string; button: string }> = {
   loss: { emoji: '🕯️', title: '결국 졌습니다.', desc: '비도 해도 경기 결과는 바꾸지 못했습니다.', button: '추모관' },
   win: { emoji: '🌞', title: '오늘은 해가 이겼습니다.', desc: '이제는 추모 대신 기념 장면을 채워봅니다.', button: '기념관' },
+  draw: { emoji: '🌥️', title: '비겼습니다.', desc: '묘하게 찝찝한 하루.', button: '기록관' },
 };

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "비라도 와라",
+  title: "하늘아 눈치 챙겨",
   description: "야구 지는 날, 팬들이 모여 우천취소를 비는 곳",
 };
 

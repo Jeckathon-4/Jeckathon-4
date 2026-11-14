@@ -72,7 +72,7 @@ export function PrayHall({ roomId, teamIndex }: { roomId: string; teamIndex: num
     <main className="pray">
       <style>{css}</style>
       <header className="pray-header">
-        <div className="pray-logo">비라도 <span>와라</span></div>
+        <div className="pray-logo">하늘아 <span>눈치 챙겨</span></div>
         <div className="pray-badge">MATCH</div>
       </header>
       <section className="pray-content">
@@ -96,7 +96,7 @@ export function PrayHall({ roomId, teamIndex }: { roomId: string; teamIndex: num
         <button className="pray-full" type="button" onClick={enter}>경기장 입장</button>
         <button className="pray-sub" type="button" onClick={changeOpponent}>상대 바꾸기</button>
       </section>
-      <footer className="pray-footer"><span>비라도 와라 · fan concept</span><span>02 / 05</span></footer>
+      <footer className="pray-footer"><span>하늘아 눈치 챙겨 · fan concept</span><span>02 / 05</span></footer>
     </main>
   );
 }
