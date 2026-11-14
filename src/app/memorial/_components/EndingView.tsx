@@ -13,6 +13,7 @@ import {
   SIGH_WORDS,
   GAME_END_SEC,
   TAP_DELAY,
+  danceKind,
   dancerStyle,
   matchSides,
   moodOf,
@@ -194,7 +195,7 @@ export function EndingView({
               <div className="clubDancers">
                 {mood === 'win' &&
                   Array.from({ length: Math.min(count, MAX_FIGURES) }, (_, i) => (
-                    <div key={i} className="clubDancer" style={dancerStyle(i)}>
+                    <div key={i} className={`clubDancer ${danceKind(i)}`} style={dancerStyle(i)}>
                       <div className="danceBody">
                         <div className="head" />
                         <div className="torso" />
@@ -298,9 +299,11 @@ export function EndingView({
               <button type="button" className="tributeBtn" aria-label={copy.label} onClick={() => void addTribute('')}>
                 {copy.button}
               </button>
-              <button type="button" className="clearBtn" onClick={() => toast.show('함께 놓은 꽃은 지울 수 없어요')}>
-                ↺
-              </button>
+              {mood !== 'win' && (
+                <button type="button" className="clearBtn" onClick={() => toast.show('함께 놓은 꽃은 지울 수 없어요')}>
+                  ↺
+                </button>
+              )}
             </div>
             <form className="tributeComposer" onSubmit={onSubmit}>
               <input

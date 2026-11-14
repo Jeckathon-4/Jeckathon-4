@@ -87,12 +87,19 @@ function scatter(i: number, salt: number) {
   return n - Math.floor(n);
 }
 
+const DANCES = ['bounce', 'wave', 'spin', 'hop', 'sway'] as const;
+
+/** 같은 번호는 항상 같은 춤. 기기마다 클럽이 똑같이 보인다. */
+export function danceKind(i: number) {
+  return DANCES[Math.floor(scatter(i, 5) * DANCES.length)];
+}
+
 export function dancerStyle(i: number) {
   return {
     '--clr': DANCER_COLORS[i % DANCER_COLORS.length],
     '--x': `${6 + scatter(i, 1) * 88}%`,
     '--y': `${4 + scatter(i, 2) * 68}%`,
-    '--scale': (0.55 + scatter(i, 3) * 0.7).toFixed(2),
+    '--scale': (0.38 + scatter(i, 3) * 0.42).toFixed(2),
     '--tempo': `${0.32 + scatter(i, 4) * 0.4}s`,
   } as React.CSSProperties;
 }
