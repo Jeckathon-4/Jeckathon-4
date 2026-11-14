@@ -52,14 +52,38 @@ export function tributeLayout(i: number) {
   };
 }
 
+export const TEAM_NAMES = ['LG', '한화', 'SSG', '삼성', 'NC', 'KT', '롯데', 'KIA', '두산', '키움'];
+const MATCHES = [
+  { id: 'm1', a: 6, b: 1 },
+  { id: 'm2', a: 0, b: 8 },
+  { id: 'm3', a: 7, b: 3 },
+  { id: 'm4', a: 2, b: 9 },
+  { id: 'm5', a: 4, b: 5 },
+];
+
+/** 점수 왼쪽이 내 팀, 오른쪽이 상대. 룸의 고정 대진과 맞춘다. */
+export function matchSides(roomId: string, team: number) {
+  const match = MATCHES.find((m) => m.id === roomId);
+  const mine = match && team !== match.a && team !== match.b ? match.a : team;
+  const opp = match ? (mine === match.a ? match.b : match.a) : mine === 1 ? 6 : 1;
+  return { mine: TEAM_NAMES[mine] ?? '내 팀', opp: TEAM_NAMES[opp] ?? '상대' };
+}
+
 const DANCER_COLORS = ['#f884e4', '#77e8ff', '#e4ff78', '#ffbb71', '#d0a3ff', '#ffffff'];
+
+/** 0~1. 같은 i면 항상 같은 자리라 여러 기기에서 클럽이 똑같이 보인다. */
+function scatter(i: number, salt: number) {
+  const n = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+}
+
 export function dancerStyle(i: number) {
   return {
     '--clr': DANCER_COLORS[i % DANCER_COLORS.length],
-    '--x': `${12 + ((i * 37.7) % 77)}%`,
-    '--y': `${17 + ((i * 13) % 28)}%`,
-    '--scale': (0.7 + (i % 4) * 0.13).toFixed(2),
-    '--tempo': `${0.35 + (i % 5) * 0.08}s`,
+    '--x': `${6 + scatter(i, 1) * 88}%`,
+    '--y': `${4 + scatter(i, 2) * 68}%`,
+    '--scale': (0.55 + scatter(i, 3) * 0.7).toFixed(2),
+    '--tempo': `${0.32 + scatter(i, 4) * 0.4}s`,
   } as React.CSSProperties;
 }
 

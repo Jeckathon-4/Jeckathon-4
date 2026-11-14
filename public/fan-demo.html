@@ -647,9 +647,9 @@ function appendTribute(t,i){
   }
   if(t.message && !window.__redrawingTributes){
     const note=document.createElement('div');note.className='memoryNote';note.textContent=t.message;
-    note.style.setProperty('--x',(15+((i*.27)%1)*62)+'%');
-    note.style.setProperty('--y',(24+((i*.37)%1)*50)+'%');
-    note.style.setProperty('--a',(-8+(i*11)%17)+'deg');note.style.zIndex=String(i+10);
+    note.style.setProperty('--x',(6+Math.random()*78)+'%');
+    note.style.setProperty('--y',(8+Math.random()*70)+'%');
+    note.style.setProperty('--a',(-18+Math.random()*36)+'deg');note.style.zIndex=String(20+(i%40));
     $('memorialMessages').appendChild(note);setTimeout(()=>note.remove(),3350);
   }
 }
@@ -692,11 +692,12 @@ $('v4').querySelector('.endingScreen').addEventListener('click',lightTogether);
 function addDancerVisual(t,i){
   const el=document.createElement('div');el.className='clubDancer';
   const colors=['#f884e4','#77e8ff','#e4ff78','#ffbb71','#d0a3ff','#ffffff'];
+  const scatter=(salt)=>{const n=Math.sin(i*127.1+salt*311.7)*43758.5453;return n-Math.floor(n)};
   el.style.setProperty('--clr',colors[i%colors.length]);
-  el.style.setProperty('--x',(12+(i*37.7)%77)+'%');
-  el.style.setProperty('--y',(17+(i*13)%28)+'%');
-  el.style.setProperty('--scale',(.7+(i%4)*.13).toFixed(2));
-  el.style.setProperty('--tempo',(.35+(i%5)*.08)+'s');
+  el.style.setProperty('--x',(6+scatter(1)*88)+'%');
+  el.style.setProperty('--y',(4+scatter(2)*68)+'%');
+  el.style.setProperty('--scale',(.55+scatter(3)*.7).toFixed(2));
+  el.style.setProperty('--tempo',(.32+scatter(4)*.4)+'s');
   el.innerHTML='<div class="danceBody"><div class="head"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>';
   $('clubDancers').appendChild(el);
 }

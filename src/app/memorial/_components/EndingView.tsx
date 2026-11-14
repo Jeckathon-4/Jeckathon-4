@@ -13,6 +13,7 @@ import {
   GAME_END_SEC,
   TAP_DELAY,
   dancerStyle,
+  matchSides,
   moodOf,
   sceneQuery,
   scoresFor,
@@ -44,6 +45,7 @@ export function EndingView({
   const { room, setRoom, error, elapsed } = useRoom(roomId);
   const toast = useToast();
   const { myScore, oppScore } = scoresFor(result, my, opp);
+  const sides = matchSides(roomId, team);
   const mood = moodOf(myScore, oppScore);
   const copy = ENDING_COPY[mood];
   const ended = room !== null && elapsed >= GAME_END_SEC;
@@ -87,15 +89,14 @@ export function EndingView({
     const id = nextId.current++;
     const msg = text.trim().slice(0, 48);
     if (msg) {
-      const i = count;
       pushTemp(setNotes, {
         id,
         text: msg,
         style: {
-          '--x': `${15 + ((i * 0.27) % 1) * 62}%`,
-          '--y': `${24 + ((i * 0.37) % 1) * 50}%`,
-          '--a': `${-8 + ((i * 11) % 17)}deg`,
-          zIndex: i + 10,
+          '--x': `${6 + Math.random() * 78}%`,
+          '--y': `${8 + Math.random() * 70}%`,
+          '--a': `${-18 + Math.random() * 36}deg`,
+          zIndex: 20 + (id % 40),
         } as CSSProperties,
       }, 3350);
     }
@@ -142,7 +143,10 @@ export function EndingView({
           <div className="endingTop">
             <div className="endingChip">{copy.chip}</div>
             <div className="endingScore">
-              <span>
+              <span className="who">
+                {sides.mine} vs {sides.opp}
+              </span>
+              <span className="num">
                 {myScore} : {oppScore}
               </span>
             </div>
