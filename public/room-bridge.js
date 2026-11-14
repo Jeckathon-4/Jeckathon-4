@@ -265,7 +265,14 @@ function applyRoom(r, restarted) {
   }
   if (state.step === 4) { if (!sharedEnded) { navigate('result'); return; } renderEnding(); }
   updateBgm();
-  if (sharedEnded && state.step === 2) { navigate('result'); return; }
+  if (sharedEnded && state.step === 2) {
+    // 경기를 보던 중 끝남 → 결과로. 끝난 직후(1분 준비 시간)에 새로 입장 → 준비 중 안내 후 경기 화면으로
+    if (renderedSent) { navigate('result'); return; }
+    const wait = Math.max(0, Math.ceil(GAME_END_SEC + 60 - elapsed));
+    note(`경기가 끝나 다음 경기를 준비 중이에요 · 약 ${wait}초 후 다시 입장해 주세요`);
+    setTimeout(() => navigate('match'), 2500);
+    markRendered(); return;
+  }
   markRendered();
 }
 updateBgm();
