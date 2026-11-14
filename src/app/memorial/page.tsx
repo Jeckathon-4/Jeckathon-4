@@ -12,8 +12,8 @@ export default async function Page({ searchParams }: { searchParams: Q }) {
   // 룸 없이 직접 들어오면 팀 선택으로
   if (!room) redirect(team !== undefined ? `/?team=${team}` : '/');
   const result = parseResult(q.result);
-  // BGM: 시나리오별 (진 경기 = 추모 오르간, 이긴 경기 = 클럽, 비긴 경기 = 막차 승강장)
-  const track = result === 'win' ? 'win' : result === 'draw' ? 'draw' : 'loss';
+  // BGM: 이긴 경기 = 클럽, 진·비긴 경기 = 추모 오르간 (추모관은 이기지 못하면 패배 추모관 공간)
+  const track = result === 'win' ? 'win' : 'loss';
   return (
     <>
     <Bgm track={track} />

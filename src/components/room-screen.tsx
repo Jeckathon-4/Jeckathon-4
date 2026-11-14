@@ -3,7 +3,7 @@
 // 메시지 규약은 docs/HANDOFF.md 참고.
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { actInRoom, getRoom, isRoomId, joinRoom, restartRoom, subscribeRoom, type Room } from '@/lib/room';
+import { actInRoom, endRoom, getRoom, isRoomId, joinRoom, restartRoom, subscribeRoom, type Room } from '@/lib/room';
 
 export type Screen = 'home' | 'match' | 'pray' | 'result' | 'memorial';
 const ROOM_SCREENS: Screen[] = ['pray', 'result', 'memorial'];
@@ -82,6 +82,13 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
         try {
           await actInRoom(roomId!, m.action);
           softRefresh();
+        } catch (err) {
+          fail(err);
+        }
+      }
+      if (m.type === 'end' && inRoom) {
+        try {
+          push(await endRoom(roomId!));
         } catch (err) {
           fail(err);
         }

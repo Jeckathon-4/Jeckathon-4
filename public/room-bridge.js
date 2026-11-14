@@ -13,7 +13,7 @@ const MATCHES = [
 const SCENARIOS = {
   win:  { label: '이긴 경기', title: '☀️ 4 : 2 · 이기는 날', lines: ['우리 팀이 리드 중. 해를 눌러 맑은 하늘을 지키세요.', '상대 팬은 비를 눌러 우천취소를 빌어요. 더 많이 누른 쪽으로 하늘이 바뀝니다.', '경기가 끝나면 승리 클럽. 댄서를 부르고 화면을 눌러 폭죽을 터뜨려요.'], mine: [1,0,2,0,0,1,0,0,0], opp: [0,1,0,0,1,0,0,0,0] }, // 4:2
   lose: { label: '진 경기', title: '💧 2 : 4 · 지는 날', lines: ['우리 팀이 끌려가는 중. 비를 눌러 우천취소를 비세요.', '비가 쌓일수록 하늘이 어두워지고 야구장이 잠겨요.', '경기가 끝나면 패배 추모관. 다 같이 국화를 헌화해요.'], mine: [0,1,0,0,1,0,0,0,0], opp: [1,0,2,0,0,1,0,0,0] }, // 2:4
-  draw: { label: '비긴 경기', title: '⛅ 3 : 3 · 애매한 날', lines: ['이기지도 지지도 않는 팽팽한 하늘. 비도 해도 마음대로 누르세요.', '같은 경기 팬끼리 비와 해가 줄다리기를 해요.', '경기가 끝나면 막차 승강장. 화면을 눌러 같이 한숨 쉬어요.'], mine: [0,2,0,0,0,1,0,0,0], opp: [0,0,0,3,0,0,0,0,0] }, // 3:3
+  draw: { label: '비긴 경기', title: '⛅ 3 : 3 · 애매한 날', lines: ['이기지도 지지도 않는 팽팽한 하늘. 비도 해도 마음대로 누르세요.', '같은 경기 팬끼리 비와 해가 줄다리기를 해요.', '경기가 끝나면 추모관. 이기지 못한 날이니 함께 헌화해요.'], mine: [0,2,0,0,0,1,0,0,0], opp: [0,0,0,3,0,0,0,0,0] }, // 3:3
 };
 const INNING_SEC = 20, PRAY_CLOSE_SEC = 100, GAME_END_SEC = 180, ACTION_GAP_MS = 250;
 const STEP_SCREEN = ['home', 'match', 'pray', 'result', 'memorial'];
@@ -28,8 +28,9 @@ let scenario = SCENARIOS[initial.get('result')] ? initial.get('result') : 'lose'
 // 개인 응원팀(URL에 유지) vs 화면 기준팀(경기 양 팀 중 하나)
 let fanTeam = Number.isInteger(teamParam) && teamParam >= 0 && teamParam < teams.length ? teamParam : (match ? match.a : 6);
 let connected = false, sharedEnded = false, sharedClosed = false, navigating = false, lastActionAt = 0;
-let manualEnd = !!(roomParam && sessionStorage.getItem(`fan-ended:${roomParam}`) === '1');
-if (manualEnd) sharedEnded = true;
+// '경기 종료' 버튼은 룸 전체 종료(end_fan_room). 로컬 종료 상태는 쓰지 않음
+const manualEnd = false;
+try { if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`); } catch {}
 
 function tellParent(data) { parent.postMessage({ source: 'fan-demo', ...data }, location.origin); }
 function navigate(screen, room) {
@@ -126,17 +127,16 @@ clearTributes = function () { toast('함께 놓은 꽃은 지울 수 없어요')
 changeScore = advanceInning = function () { toast('경기는 모두 같은 시계로 자동 진행돼요'); };
 finishGame = function () {
   if (!connected) { toast('경기장에 연결하는 중이에요'); return; }
-  if (roomParam) sessionStorage.setItem(`fan-ended:${roomParam}`, '1');
-  manualEnd = true; sharedEnded = true;
-  navigate('result');
+  if (sharedEnded) { navigate('result'); return; }
+  if (navigating) return;
+  toast('경기를 종료합니다'); tellParent({ type: 'end' });
 };
 randomOpponent = function () { toast('대진은 경기 목록에서 골라요'); };
 // 추모관 '초기화' → 같은 경기 룸에서 새 경기 시작 (종료 후에만 DB가 허용)
 resetDemo = function () {
   if (!sharedEnded) { toast('경기가 끝난 뒤 새 경기를 시작할 수 있어요'); return; }
   if (navigating) return; navigating = true; setTimeout(() => (navigating = false), 2000);
-  manualEnd = false; sharedEnded = false;
-  if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`);
+  sharedEnded = false;
   tellParent({ type: 'restart' });
 };
 document.querySelectorAll('#v4 .ghostBtn').forEach((b) => { if (b.textContent.trim() === '초기화') b.textContent = '새 경기'; });
@@ -200,8 +200,7 @@ function applyRoom(r, restarted) {
   const elapsed = Math.max(0, (Date.now() - Date.parse(r.started_at)) / 1000);
   sharedClosed = elapsed >= PRAY_CLOSE_SEC; sharedEnded = elapsed >= GAME_END_SEC || manualEnd;
   if (restarted) {
-    manualEnd = false; sharedEnded = elapsed >= GAME_END_SEC;
-    if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`);
+    sharedEnded = elapsed >= GAME_END_SEC;
     toast('이 경기장에서 새 경기가 시작됐어요');
     if (state.step >= 3) { navigate('pray'); return; }
   }
@@ -222,6 +221,7 @@ function applyRoom(r, restarted) {
 
   if (state.step === 3) {
     renderResult();
+    if (state.myScore === state.oppScore) $('resultButton').textContent = '추모관';
     $('resultButton').disabled = !sharedEnded;
     if (!sharedEnded) { $('resultTitle').textContent = '아직 끝나지 않았어요'; $('resultDesc').textContent = `${state.inning}회 진행 중 · 9회 종료 후 결과가 확정됩니다.`; }
   }

@@ -28,6 +28,13 @@ export async function restartRoom(id: string): Promise<Room> {
   return data as Room;
 }
 
+/** 시연용 '경기 종료': 룸 전체 경기를 즉시 종료 (supabase/002). 모든 접속자가 결과 화면으로 이동 */
+export async function endRoom(id: string): Promise<Room> {
+  const { data, error } = await supabase.rpc('end_fan_room', { room_id: id });
+  if (error || !data) throw new Error('경기를 종료하지 못했어요. 다시 눌러주세요.');
+  return data as Room;
+}
+
 /** 비·해(100초 전만 반영), 헌화(180초 후만 반영). 시간 밖이면 DB가 조용히 무시 */
 export async function actInRoom(id: string, action: RoomAction) {
   const { error } = await supabase.rpc('act_in_fan_room', { room_id: id, action_name: action });
