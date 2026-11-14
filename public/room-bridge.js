@@ -64,10 +64,11 @@ syncTeams(); renderTeamGrid();
 const baseSelectTeam = selectTeam;
 selectTeam = function (i) { baseSelectTeam(i); fanTeam = i; };
 
-function scoreAt(elapsed) {
-  const done = Math.min(9, Math.floor(elapsed / INNING_SEC));
-  const sum = (arr) => arr.slice(0, done).reduce((t, v) => t + v, 0);
+function scoreAt() {
+  // 시나리오로 정해진 경기라 경기장·결과·추모관 모두 같은 최종 점수를 보여준다 (이닝만 시계대로 진행)
+  const sum = (arr) => arr.reduce((t, v) => t + v, 0);
   return { my: sum(SCENARIOS[scenario].mine), opp: sum(SCENARIOS[scenario].opp) };
+};
 }
 
 // 초대 링크: 같은 경기 룸 주소 복사 (UI에서 필요하면 copyInvite(matchOf(fanTeam).id) 호출)
