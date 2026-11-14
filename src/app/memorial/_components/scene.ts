@@ -43,22 +43,37 @@ export function moodOf(myScore: number, oppScore: number): Mood {
 }
 
 /** 공유된 헌화 수로 꽃 배치를 결정적으로 만든다 (모든 기기에서 같은 모양) */
-/** 차분하게 정렬된 헌화 배치: 5송이씩 줄을 맞춰 아래부터 쌓고(엇갈린 벽돌 배열), 7줄이 차면 조금 옮겨 다음 층 */
-const COLS = 5;
-const ROWS = 7;
+/** 0~1 사이의 결정적 난수 (모든 기기에서 같은 배치) */
+function rand(i: number, salt: number) {
+  const v = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+/**
+ * 헌화 배치: 좌우 가장자리부터 번갈아 쌓인다. 왼쪽은 아래 안쪽 → 위 바깥쪽 대각선,
+ * 오른쪽은 그 반대 대각선(V자). 한 줄(8송이)이 차면 다음 층은 조금씩 안쪽으로.
+ * 너무 반듯하지 않게 위치·각도에 작은 흔들림을 준다.
+ */
+const PER_LINE = 8;
 export function tributeLayout(i: number) {
-  const layer = Math.floor(i / (COLS * ROWS));
-  const j = i % (COLS * ROWS);
-  const row = Math.floor(j / COLS);
-  const col = j % COLS;
+  const left = i % 2 === 0;
+  const k = Math.floor(i / 2);
+  const layer = Math.floor(k / PER_LINE);
+  const t = (k % PER_LINE) / (PER_LINE - 1);
+  const inward = Math.min(layer, 4) * 6;
+  const jx = (rand(i, 1) - 0.5) * 5;
+  const jy = (rand(i, 2) - 0.5) * 4;
+  const x = left ? 22 - t * 22 + inward + jx : 64 + t * 20 - inward + jx;
+  const y = 30 + t * 32 + Math.min(layer, 4) * 1.5 + jy;
   return {
-    x: 6 + col * 15 + (row % 2) * 7.5 + (layer % 3) * 3,
-    y: 30 + row * 6.5 + (layer % 3) * 2,
-    size: 1,
-    rotation: -12,
+    x,
+    y,
+    size: 0.92 + rand(i, 3) * 0.16,
+    rotation: (left ? 8 : -8) + (rand(i, 4) - 0.5) * 18,
+    flip: left,
     seed: i * 7.31,
-    // 아래 줄이 앞에 보이도록
-    z: layer * 100 + (ROWS - row) * 10 + col,
+    // 아래쪽 꽃이 앞에 보이도록
+    z: 1000 - Math.round(y * 10) + layer,
   };
 }
 

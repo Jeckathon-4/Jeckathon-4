@@ -1,8 +1,10 @@
 import { supabase } from './supabase';
 
 /** 공유 룸 한 줄. 경기 시계는 started_at 기준 (20초=1이닝, 100초 기도 마감, 180초 종료) */
-export type Room = { id: string; started_at: string; rain: number; sun: number; flowers: number };
-export type RoomAction = 'rain' | 'sun' | 'flowers';
+export type Room = { id: string; started_at: string; rain: number; sun: number; flowers: number; dancers?: number; sighs?: number };
+export type RoomAction = 'rain' | 'sun' | 'flowers' | 'dancers' | 'sighs';
+/** 끝화면별 공유 카운터: 패배 추모관 = flowers, 승리 클럽 = dancers, 무승부 대합실 = sighs (supabase/003) */
+export const ENDING_FIELD = { loss: 'flowers', win: 'dancers', draw: 'sighs' } as const;
 
 export const ROOM_ID_RE = /^[a-zA-Z0-9_-]{1,40}$/;
 export const isRoomId = (v: unknown): v is string => typeof v === 'string' && ROOM_ID_RE.test(v);
