@@ -145,6 +145,8 @@ document.querySelectorAll('#v4 .ghostBtn').forEach((b) => { if (b.textContent.tr
 
 // ---- BGM: 기도관 = 긴장, 끝난 뒤 결과·추모관 = 시나리오별(패배 오르간 / 승리 클럽 / 무승부 막차) ----
 let paused = false;
+// 숨겨진 화면은 터치를 받을 수 없음 → 터치가 오면 보이는 화면이므로 일시정지 해제 (복귀 시 resume 누락 대비)
+window.addEventListener('pointerdown', () => { if (paused) { paused = false; navigating = false; updateBgm(); } }, true);
 function updateBgm() {
   if (!window.BGM) return;
   if (paused) { BGM.play(null); return; }
@@ -164,18 +166,27 @@ style.textContent += `.bgmToggle{margin-left:auto;margin-right:8px;background:no
   if (screenParam !== 'home') return;
   const el = document.createElement('div');
   el.className = 'splash';
-  el.innerHTML = '<div class="splashMark">☁️</div><div class="splashName">하늘아<br><span>눈치 챙겨</span></div><div class="splashSub">야구 지는 날, 우리는 하늘에 빕니다</div>';
+  el.innerHTML = '<img class="splashLogo" src="/brand/logo.png" alt="하늘아 눈치 챙겨!"><div class="splashSub">야구 지는 날, 우리는 하늘에 빕니다</div>';
   (document.getElementById('phoneInner') || document.body).appendChild(el);
   setTimeout(() => el.classList.add('out'), 3000);
   setTimeout(() => el.remove(), 4100);
 })();
 style.textContent += `.splash{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 38%,#24375a 0%,#111b2d 62%);color:#eef3fb;text-align:center;transition:opacity 1s ease,filter 1s ease}
 .splash.out{opacity:0;filter:brightness(.25);pointer-events:none}
-.splashMark{font-size:64px;animation:splashIn .9s cubic-bezier(.2,.8,.2,1) both}
+.splashLogo{width:min(68%,280px);height:auto;border-radius:28px;box-shadow:0 18px 50px rgba(0,0,0,.45);animation:splashIn .9s cubic-bezier(.2,.8,.2,1) both}
 .splashName{font-size:38px;font-weight:950;letter-spacing:-.05em;line-height:1.15;animation:splashIn .9s .15s cubic-bezier(.2,.8,.2,1) both}.splashName span{color:#ffce77}
 .splashSub{font-size:12px;color:#9fb3cf;animation:splashIn .9s .35s cubic-bezier(.2,.8,.2,1) both}
 @keyframes splashIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
 .view.active{animation:viewIn .32s ease both}@keyframes viewIn{from{opacity:0}to{opacity:1}}`;
+
+// ---- 경기장 화면 정리: 꽉 찬 야구장, 버튼 문구, 상단 안내 제거, 경기 종료 버튼 우측 하단 ----
+style.textContent += `.fieldWrap .stadium{display:block;width:100%;height:100%}
+.roleBanner{display:none!important}
+.underActions{width:auto;gap:24px}.underActions span{width:auto;min-width:72px;white-space:nowrap}
+.endGame{position:absolute!important;right:14px;bottom:16px;z-index:20;width:auto!important;margin:0!important;padding:10px 16px!important;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.35)}`;
+if ($('rainHint')) $('rainHint').textContent = '비라도 와라!';
+if ($('sunHint')) $('sunHint').textContent = '어림없지, 쨍쨍!';
+{ const eg = document.querySelector('.endGame'), gs = document.querySelector('#v2 .gameScreen'); if (eg && gs) gs.appendChild(eg); }
 
 // ---- 초기 화면 ----
 const initialStep = STEP_SCREEN.indexOf(screenParam);
@@ -242,7 +253,12 @@ function applyRoom(r, restarted) {
   state.flowers = r.flowers;
   $('tributeBtn').disabled = !sharedEnded;
 
+  // 결과 화면인데 경기가 진행 중 = 누군가 새 경기를 시작함 → 같이 기도관으로
+  if (state.step === 3 && !sharedEnded) { navigate('pray'); return; }
   if (state.step === 3) {
+    // 끝난 경기의 기도관은 다시 결과로 돌아오므로, 결과 화면의 뒤로 버튼은 처음(팀 선택)으로
+    const back = document.querySelector('#v3 .back');
+    if (back && sharedEnded) { back.textContent = '← 처음으로'; back.onclick = () => navigate('home'); }
     renderResult();
     $('resultButton').disabled = !sharedEnded;
     if (!sharedEnded) { $('resultTitle').textContent = '아직 끝나지 않았어요'; $('resultDesc').textContent = `${state.inning}회 진행 중 · 9회 종료 후 결과가 확정됩니다.`; }

@@ -41,7 +41,8 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
       if (alive) frame.current?.contentWindow?.postMessage({ source: 'fan-host', ...data }, location.origin);
     };
     const push = (room: Room) => {
-      const restarted = !!lastStart && lastStart !== room.started_at;
+      // 새 경기 = 시작 시각이 뒤로 감. '경기 종료'는 시작 시각을 앞으로 당기므로 새 경기가 아님
+      const restarted = !!lastStart && Date.parse(room.started_at) > Date.parse(lastStart);
       lastStart = room.started_at;
       lastRoom = room;
       send({ type: 'state', room, restarted });
