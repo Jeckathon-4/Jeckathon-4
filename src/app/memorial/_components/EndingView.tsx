@@ -293,7 +293,9 @@ export function EndingView({
             </div>
           </div>
 
-          <DemoDrawer roomId={roomId} team={team} result={result} myScore={myScore} oppScore={oppScore} />
+          {mood === 'win' && (
+            <DemoDrawer roomId={roomId} team={team} result={result} myScore={myScore} oppScore={oppScore} />
+          )}
           <div className="endingBottom">
             <div className="endingMini">
               <div className="box">
@@ -319,14 +321,16 @@ export function EndingView({
               />
               <button type="submit">남기기</button>
             </form>
-            <div className="endingNav">
-              <button type="button" onClick={() => void restart()}>
-                새 경기
-              </button>
-              <button type="button" onClick={() => router.push(`/?team=${team}`)}>
-                다른 경기
-              </button>
-            </div>
+            {mood === 'win' && (
+              <div className="endingNav">
+                <button type="button" onClick={() => void restart()}>
+                  새 경기
+                </button>
+                <button type="button" onClick={() => router.push(`/?team=${team}`)}>
+                  다른 경기
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>
