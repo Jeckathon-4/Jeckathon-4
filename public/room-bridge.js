@@ -179,6 +179,15 @@ style.textContent += `.splash{position:absolute;inset:0;z-index:100;display:flex
 @keyframes splashIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
 .view.active{animation:viewIn .32s ease both}@keyframes viewIn{from{opacity:0}to{opacity:1}}`;
 
+// ---- 경기장 화면 정리: 꽉 찬 야구장, 버튼 문구, 상단 안내 제거, 경기 종료 버튼 우측 하단 ----
+style.textContent += `.fieldWrap .stadium{display:block;width:100%;height:100%}
+.roleBanner{display:none!important}
+.underActions{width:auto;gap:24px}.underActions span{width:auto;min-width:72px;white-space:nowrap}
+.endGame{position:absolute!important;right:14px;bottom:16px;z-index:20;width:auto!important;margin:0!important;padding:10px 16px!important;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.35)}`;
+if ($('rainHint')) $('rainHint').textContent = '비라도 와라!';
+if ($('sunHint')) $('sunHint').textContent = '어림없지, 쨍쨍!';
+{ const eg = document.querySelector('.endGame'), gs = document.querySelector('#v2 .gameScreen'); if (eg && gs) gs.appendChild(eg); }
+
 // ---- 초기 화면 ----
 const initialStep = STEP_SCREEN.indexOf(screenParam);
 if (inRoom && initialStep >= 3) { const sc = scoreAt(GAME_END_SEC); state.myScore = sc.my; state.oppScore = sc.opp; }
