@@ -24,8 +24,8 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
   const [shown, setShown] = useState(false);
   // iframe이 하이드레이션 전에 이미 로드됐거나 onLoad를 놓쳐도 반드시 보이게
   useEffect(() => {
-    if (frame.current?.contentDocument?.readyState === 'complete') setShown(true);
-    const t = setTimeout(() => setShown(true), 900);
+    // 첫 상태가 그려지면(rendered) 나타남. 신호를 놓쳐도 1.6초 뒤엔 반드시 표시
+    const t = setTimeout(() => setShown(true), 1600);
     return () => clearTimeout(t);
   }, []);
   const router = useRouter();
@@ -75,6 +75,7 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
       const m = e.data;
       const t = Number.isInteger(Number(m.team)) ? Number(m.team) : (team ?? 6);
       const res = isScenario(m.result) ? m.result : result;
+      if (m.type === 'rendered') setShown(true);
       if (m.type === 'navigate' && ALL_SCREENS.includes(m.screen)) {
         const room = isRoomId(m.room) ? m.room : roomId;
         if (ROOM_SCREENS.includes(m.screen) && !room) return;
@@ -136,8 +137,7 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
         title="하늘아 눈치 챙겨 야구장"
         allow="autoplay; clipboard-write"
         src={`/fan-demo.html?${qs}`}
-        onLoad={() => setShown(true)}
-        style={{ position: 'relative', display: 'block', width: '100%', height: '100dvh', border: 0, background: 'transparent', opacity: shown ? 1 : 0, transition: 'opacity .28s ease' }}
+        style={{ position: 'relative', display: 'block', width: '100%', height: '100dvh', border: 0, background: 'transparent', opacity: shown ? 1 : 0, transition: 'opacity .35s ease' }}
       />
     </div>
   );

@@ -191,7 +191,7 @@ if (initialStep === 0) {
   if (btn) btn.textContent = '입장';
 }
 if (inRoom) {
-  note('경기장에 연결하는 중…');
+  setTimeout(() => { if (!connected) note('경기장에 연결하는 중…'); }, 1500);
   $('rainAction').disabled = true; $('sunAction').disabled = true; $('tributeBtn').disabled = true;
   if (initialStep === 3) $('resultButton').disabled = true;
 }
@@ -214,6 +214,8 @@ setInterval(() => {
   const inning = Math.min(9, Math.floor(e / INNING_SEC) + 1);
   if (e >= PRAY_CLOSE_SEC !== sharedClosed || e >= GAME_END_SEC !== sharedEnded || (state.step === 2 && inning !== state.inning)) applyRoom(lastRoomState, false);
 }, 1000);
+let renderedSent = false;
+function markRendered() { if (renderedSent) return; renderedSent = true; requestAnimationFrame(() => tellParent({ type: 'rendered' })); }
 function applyRoom(r, restarted) {
   lastRoomState = r;
   connected = true; note('');
@@ -246,7 +248,9 @@ function applyRoom(r, restarted) {
   }
   if (state.step === 4) { if (!sharedEnded) { navigate('result'); return; } renderEnding(); }
   updateBgm();
-  if (sharedEnded && state.step === 2) navigate('result');
+  if (sharedEnded && state.step === 2) { navigate('result'); return; }
+  markRendered();
 }
 updateBgm();
 tellParent({ type: 'ready' });
+if (!inRoom) markRendered();
