@@ -61,7 +61,12 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
       if (!roomId) return;
       try {
         // 기도관 진입 때만 입장 RPC (종료 후 60초 지난 룸이면 새 경기). 결과·추모관은 읽기만.
-        push(screen === 'pray' ? await joinRoom(roomId) : ((await getRoom(roomId)) ?? (await joinRoom(roomId))));
+        if (screen === 'pray') {
+          // 경기장 입장 시 이미 끝난 경기면 새 경기로 시작 (시연 중 '경기 종료' 직후 입장해도 바로 결과로 튕기지 않게)
+          let room = await joinRoom(roomId);
+          if (Date.now() - Date.parse(room.started_at) >= 180_000) room = await restartRoom(roomId);
+          push(room);
+        } else push((await getRoom(roomId)) ?? (await joinRoom(roomId)));
       } catch (e) {
         fail(e);
       }
