@@ -114,8 +114,8 @@ export function dancerStyle(i: number) {
     '--clr': DANCER_COLORS[i % DANCER_COLORS.length],
     '--x': `${6 + scatter(i, 1) * 88}%`,
     '--y': `${4 + scatter(i, 2) * 68}%`,
-    '--scale': (0.28 + scatter(i, 3) * 0.28).toFixed(2),
-    '--tempo': `${0.55 + scatter(i, 4) * 0.35}s`,
+    '--scale': (0.72 + scatter(i, 3) * 0.38).toFixed(2),
+    '--tempo': `${0.38 + scatter(i, 4) * 0.28}s`,
   } as React.CSSProperties;
 }
 

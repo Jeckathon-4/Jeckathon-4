@@ -1,9 +1,8 @@
 'use client';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ENDING_FIELD, actInRoom, restartRoom } from '@/lib/room';
+import { ENDING_FIELD, actInRoom } from '@/lib/room';
 import { AppFrame } from './AppFrame';
-import { DemoDrawer } from './DemoDrawer';
 import { Chrysanthemum } from './Chrysanthemum';
 import { useRoom } from './useRoom';
 import { useToast } from './useToast';
@@ -61,15 +60,6 @@ export function EndingView({
   useEffect(() => {
     if (notEnded) router.replace(`/result?${sceneQuery(roomId, team, result)}`);
   }, [notEnded, router, roomId, team, result]);
-
-  const restart = async () => {
-    try {
-      await restartRoom(roomId);
-      router.push(`/pray?${sceneQuery(roomId, team, result)}`);
-    } catch (e) {
-      toast.show((e as Error).message);
-    }
-  };
 
   const [message, setMessage] = useState('');
   const [notes, setNotes] = useState<Note[]>([]);
@@ -205,12 +195,21 @@ export function EndingView({
                   Array.from({ length: Math.min(count, MAX_FIGURES) }, (_, i) => (
                     <div key={i} className={`clubDancer ${danceKind(i)}`} style={dancerStyle(i)}>
                       <div className="danceBody">
-                        <div className="head" />
-                        <div className="torso" />
-                        <div className="arm left" />
-                        <div className="arm right" />
-                        <div className="leg left" />
-                        <div className="leg right" />
+                        <div className="torso">
+                          <div className="head" />
+                          <div className="joint arm left">
+                            <div className="limb" />
+                          </div>
+                          <div className="joint arm right">
+                            <div className="limb" />
+                          </div>
+                          <div className="joint leg left">
+                            <div className="limb" />
+                          </div>
+                          <div className="joint leg right">
+                            <div className="limb" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -293,7 +292,6 @@ export function EndingView({
             </div>
           </div>
 
-          <DemoDrawer roomId={roomId} team={team} result={result} myScore={myScore} oppScore={oppScore} />
           <div className="endingBottom">
             <div className="endingMini">
               <div className="box">
@@ -325,11 +323,8 @@ export function EndingView({
               <button type="submit">남기기</button>
             </form>
             <div className="endingNav">
-              <button type="button" onClick={() => void restart()}>
-                새 경기
-              </button>
-              <button type="button" onClick={() => router.push(`/?team=${team}`)}>
-                다른 경기
+              <button type="button" onClick={() => router.push('/')}>
+                처음으로 돌아가기
               </button>
             </div>
           </div>

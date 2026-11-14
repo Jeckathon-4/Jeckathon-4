@@ -181,43 +181,49 @@ h1 em{font-style:normal;color:#ffd68a}.desc{color:#b7c4d8;line-height:1.85;font-
 .clubFloor{position:absolute;left:-30%;right:-30%;bottom:-18%;height:45%;transform:perspective(350px) rotateX(56deg);transform-origin:center top;background:repeating-linear-gradient(90deg,transparent 0 62px,#ee63fb55 63px 67px),repeating-linear-gradient(0deg,#1e1547 0 42px,#57d8ff66 43px 47px);box-shadow:0 0 50px #d341ec77}
 .clubHeadline{position:absolute;left:0;right:0;top:30%;text-align:center;font-size:clamp(36px,12vw,64px);font-weight:1000;font-style:italic;letter-spacing:.1em;color:#fff9dc;text-shadow:0 0 12px #fff,0 0 34px #ff39de,0 0 65px #ff39de;animation:clubPulse .7s infinite alternate}
 .clubDancers{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
-.clubDancer{position:absolute;left:var(--x);bottom:var(--y);width:64px;height:125px;transform:translateX(-50%) scale(var(--scale));transform-origin:bottom center;filter:drop-shadow(0 0 10px var(--clr));animation:dancerEnter .4s ease-out both}
-.clubDancer .danceBody{position:absolute;inset:0}
-.clubDancer .head{position:absolute;top:16px;left:20px;width:25px;height:25px;background:var(--clr);border-radius:50%;box-shadow:0 0 14px var(--clr)}
-.clubDancer .torso{position:absolute;top:37px;left:24px;width:18px;height:46px;border-radius:10px;background:var(--clr)}
-.clubDancer .arm,.clubDancer .leg{position:absolute;border-radius:12px;background:var(--clr);transform-origin:top center}
-.clubDancer .arm{top:38px;width:9px;height:46px}.clubDancer .arm.left{left:22px}.clubDancer .arm.right{right:20px}
-.clubDancer .leg{top:74px;width:10px;height:46px}.clubDancer .leg.left{left:25px}.clubDancer .leg.right{right:23px}
-.clubDancer.bounce .danceBody{animation:danceBounce var(--tempo,.48s) ease-in-out infinite alternate}
-.clubDancer.bounce .arm.left{animation:armLeft var(--tempo,.46s) ease-in-out infinite alternate}
-.clubDancer.bounce .arm.right{animation:armRight calc(var(--tempo,.48s) * 1.15) ease-in-out infinite alternate}
-.clubDancer.bounce .leg.left{rotate:8deg}.clubDancer.bounce .leg.right{rotate:-8deg}
-.clubDancer.wave .danceBody{animation:danceWave var(--tempo,.7s) ease-in-out infinite alternate}
-.clubDancer.wave .arm.left{animation:armWaveL var(--tempo,.7s) ease-in-out infinite alternate}
-.clubDancer.wave .arm.right{animation:armWaveR var(--tempo,.7s) ease-in-out infinite alternate}
-.clubDancer.wave .leg.left{rotate:6deg}.clubDancer.wave .leg.right{rotate:-6deg}
-.clubDancer.hop .danceBody{animation:danceHop calc(var(--tempo,.55s) * 1.2) ease-in infinite}
-.clubDancer.hop .arm.left{animation:armPump var(--tempo,.4s) ease-in-out infinite alternate}
-.clubDancer.hop .arm.right{animation:armPump var(--tempo,.4s) ease-in-out infinite alternate-reverse}
-.clubDancer.hop .leg.left{animation:legHopL var(--tempo,.4s) ease-in-out infinite alternate}
-.clubDancer.hop .leg.right{animation:legHopR var(--tempo,.4s) ease-in-out infinite alternate-reverse}
-.clubDancer.sway .danceBody{animation:danceSway calc(var(--tempo,.7s) * 1.2) ease-in-out infinite alternate;transform-origin:50% 100%}
-.clubDancer.sway .arm.left{animation:armPoint var(--tempo,.7s) ease-in-out infinite alternate}
-.clubDancer.sway .arm.right{transform:rotate(-22deg)}
-.clubDancer.sway .leg.left{rotate:10deg}.clubDancer.sway .leg.right{rotate:-4deg}
+.clubDancer{position:absolute;left:var(--x);bottom:var(--y);width:64px;height:125px;transform:translateX(-50%) scale(var(--scale));transform-origin:bottom center;filter:drop-shadow(0 0 6px var(--clr));animation:dancerEnter .4s ease-out both}
+.clubDancer .danceBody{position:absolute;inset:0;transform-origin:50% 100%}
+.clubDancer .torso{position:absolute;top:34px;left:23px;width:18px;height:46px;border-radius:9px;background:var(--clr)}
+.clubDancer .head{position:absolute;top:-26px;left:-2px;width:22px;height:22px;background:var(--clr);border-radius:50%;box-shadow:0 0 10px var(--clr)}
+.clubDancer .joint{position:absolute;width:0;height:0}
+.clubDancer .joint.arm.left{top:4px;left:2px;transform:rotate(14deg)}
+.clubDancer .joint.arm.right{top:4px;left:16px;transform:rotate(-14deg)}
+.clubDancer .joint.leg.left{top:42px;left:5px;transform:rotate(7deg)}
+.clubDancer .joint.leg.right{top:42px;left:13px;transform:rotate(-7deg)}
+.clubDancer .limb{position:absolute;left:-3.5px;top:-5px;width:7px;border-radius:4px;background:var(--clr);transform-origin:3.5px 5px}
+.clubDancer .joint.arm .limb{height:40px}
+.clubDancer .joint.leg .limb{height:38px;top:-6px}
+.clubDancer.bounce .danceBody{animation:danceGroove var(--tempo,.72s) ease-in-out infinite}
+.clubDancer.bounce .joint.arm.left{animation:grooveArmL var(--tempo,.72s) ease-in-out infinite}
+.clubDancer.bounce .joint.arm.right{animation:grooveArmR var(--tempo,.72s) ease-in-out infinite}
+.clubDancer.bounce .joint.leg.left{animation:grooveLegL var(--tempo,.72s) ease-in-out infinite}
+.clubDancer.bounce .joint.leg.right{animation:grooveLegR var(--tempo,.72s) ease-in-out infinite}
+.clubDancer.wave .danceBody{animation:cheerBody calc(var(--tempo,.72s) * 1.15) ease-in-out infinite}
+.clubDancer.wave .joint.arm.left{animation:cheerArmL calc(var(--tempo,.72s) * 1.15) ease-in-out infinite}
+.clubDancer.wave .joint.arm.right{animation:cheerArmR calc(var(--tempo,.72s) * 1.15) ease-in-out infinite}
+.clubDancer.hop .danceBody{animation:stepBody var(--tempo,.64s) ease-in-out infinite}
+.clubDancer.hop .joint.arm.left{animation:stepArmL var(--tempo,.64s) ease-in-out infinite}
+.clubDancer.hop .joint.arm.right{animation:stepArmR var(--tempo,.64s) ease-in-out infinite}
+.clubDancer.hop .joint.leg.left{animation:stepLegL var(--tempo,.64s) ease-in-out infinite}
+.clubDancer.hop .joint.leg.right{animation:stepLegR var(--tempo,.64s) ease-in-out infinite}
+.clubDancer.sway .danceBody{animation:swayBody calc(var(--tempo,.8s) * 1.3) ease-in-out infinite}
+.clubDancer.sway .joint.arm.left{animation:swayHand calc(var(--tempo,.8s) * 1.3) ease-in-out infinite}
 @keyframes dancerEnter{from{opacity:0;translate:0 35px}to{opacity:1;translate:0 0}}
-@keyframes danceBounce{from{transform:translateY(1px) rotate(-3deg)}to{transform:translateY(-6px) rotate(3deg)}}
-@keyframes armLeft{from{transform:rotate(8deg)}to{transform:rotate(52deg)}}
-@keyframes armRight{from{transform:rotate(-8deg)}to{transform:rotate(-52deg)}}
-@keyframes danceWave{from{transform:translateX(-4px) rotate(-3deg)}to{transform:translateX(4px) rotate(3deg)}}
-@keyframes armWaveL{from{transform:rotate(62deg)}to{transform:rotate(98deg)}}
-@keyframes armWaveR{from{transform:rotate(-62deg)}to{transform:rotate(-98deg)}}
-@keyframes danceHop{0%,100%{transform:translateY(0)}35%{transform:translateY(-8px)}55%{transform:translateY(0)}}
-@keyframes armPump{from{transform:rotate(10deg)}to{transform:rotate(58deg)}}
-@keyframes legHopL{from{transform:rotate(4deg)}to{transform:rotate(16deg)}}
-@keyframes legHopR{from{transform:rotate(-4deg)}to{transform:rotate(-16deg)}}
-@keyframes danceSway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
-@keyframes armPoint{from{transform:rotate(72deg)}to{transform:rotate(108deg)}}
+@keyframes danceGroove{0%,100%{transform:translateY(2px) rotate(-8deg)}50%{transform:translateY(-14px) rotate(8deg)}}
+@keyframes grooveArmL{0%,100%{transform:rotate(28deg)}50%{transform:rotate(158deg)}}
+@keyframes grooveArmR{0%,100%{transform:rotate(-22deg)}50%{transform:rotate(-162deg)}}
+@keyframes grooveLegL{0%,100%{transform:rotate(8deg)}50%{transform:rotate(24deg)}}
+@keyframes grooveLegR{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(-24deg)}}
+@keyframes cheerBody{0%,100%{transform:translateX(-5px) rotate(-5deg)}50%{transform:translateX(5px) rotate(5deg)}}
+@keyframes cheerArmL{0%,100%{transform:rotate(118deg)}50%{transform:rotate(158deg)}}
+@keyframes cheerArmR{0%,100%{transform:rotate(-118deg)}50%{transform:rotate(-158deg)}}
+@keyframes stepBody{0%,100%{transform:translateY(0)}32%{transform:translateY(-16px)}55%{transform:translateY(0)}}
+@keyframes stepArmL{0%,100%{transform:rotate(36deg)}35%{transform:rotate(152deg)}}
+@keyframes stepArmR{0%,100%{transform:rotate(-36deg)}35%{transform:rotate(-152deg)}}
+@keyframes stepLegL{0%,100%{transform:rotate(6deg)}35%{transform:rotate(26deg)}}
+@keyframes stepLegR{0%,100%{transform:rotate(-6deg)}35%{transform:rotate(-26deg)}}
+@keyframes swayBody{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+@keyframes swayHand{0%,100%{transform:rotate(125deg)}50%{transform:rotate(168deg)}}
 .clubTapHint{position:absolute;top:48%;left:0;right:0;text-align:center;font-size:11px;color:#ffffffc7;letter-spacing:.1em;z-index:5;pointer-events:none;animation:clubHintBlink 2s ease-in-out infinite}
 @keyframes clubHintBlink{50%{opacity:.25}}
 .clubFirework{position:absolute;left:var(--x);top:var(--y);width:0;height:0;z-index:9;pointer-events:none}
@@ -228,7 +234,7 @@ h1 em{font-style:normal;color:#ffd68a}.desc{color:#b7c4d8;line-height:1.85;font-
 .endingScreen.isWin .endingMini .box{background:#19083bb3}
 .endingScreen.isWin .tributeComposer{background:#160b37c7;border-color:#ff6de66b}
 .endingScreen.isWin .tributeComposer button{background:#f7a5f9;color:#340b48}
-@media(prefers-reduced-motion:reduce){.clubGlow,.clubMirror,.clubLaser,.clubHeadline,.clubDancer .danceBody,.clubDancer .arm,.clubDancer .leg{animation:none}}
+@media(prefers-reduced-motion:reduce){.clubGlow,.clubMirror,.clubLaser,.clubHeadline,.clubDancer .danceBody,.clubDancer .joint{animation:none}}
 
 /* V10 — sleepless late-night waiting room for draws */
 .endingScreen.isDraw{background:#101a26}
@@ -722,10 +728,10 @@ function addDancerVisual(t,i){
   el.style.setProperty('--clr',colors[i%colors.length]);
   el.style.setProperty('--x',(6+scatter(1)*88)+'%');
   el.style.setProperty('--y',(4+scatter(2)*68)+'%');
-  el.style.setProperty('--scale',(.28+scatter(3)*.28).toFixed(2));
-  el.style.setProperty('--tempo',(.55+scatter(4)*.35)+'s');
+  el.style.setProperty('--scale',(.72+scatter(3)*.38).toFixed(2));
+  el.style.setProperty('--tempo',(.38+scatter(4)*.28)+'s');
   el.classList.add(['bounce','wave','hop','sway'][Math.floor(scatter(5)*4)]);
-  el.innerHTML='<div class="danceBody"><div class="head"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>';
+  el.innerHTML='<div class="danceBody"><div class="torso"><div class="head"></div><div class="joint arm left"><div class="limb"></div></div><div class="joint arm right"><div class="limb"></div></div><div class="joint leg left"><div class="limb"></div></div><div class="joint leg right"><div class="limb"></div></div></div></div>';
   $('clubDancers').appendChild(el);
 }
 function launchClubFireworks(event){
