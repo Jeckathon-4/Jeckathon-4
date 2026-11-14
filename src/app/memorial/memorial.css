@@ -1,0 +1,145 @@
+/* 원본 프로토타입(skyball_fandom_demo_v10.html) 4·5페이지 스타일을 그대로 옮김.
+   다른 화면과 충돌하지 않도록 .memorialRoot 아래로만 적용한다. */
+.memorialRoot {
+  --txt: #eef3fb;
+  position: relative;
+  max-width: 480px;
+  height: 100dvh;
+  min-height: 580px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #111b2d;
+  color: var(--txt);
+  font-family: system-ui, -apple-system, 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  box-shadow: 0 0 50px #15362812;
+
+  & button, & input { font: inherit; }
+  & button { cursor: pointer; border: 0; }
+  & button:focus-visible, & input:focus-visible { outline: 3px solid #86c5ff; outline-offset: 2px; }
+  & button:disabled { opacity: .45; cursor: not-allowed; }
+
+  .header{position:relative;z-index:7;display:flex;justify-content:space-between;align-items:center;padding:18px 18px 10px;flex-shrink:0}.logo{font-weight:900;font-size:14px;letter-spacing:-.03em}.logo span{color:#ffce77}.badge{font-size:10px;border:1px solid #3c4c66;color:#98adcc;border-radius:999px;padding:5px 8px}
+  .view{display:flex;flex-direction:column;flex:1;min-height:0;position:relative;z-index:5;animation:fade .22s ease}
+  .content{padding:10px 18px 24px;flex:1;overflow:auto;min-height:0}.kicker{font-size:11px;letter-spacing:.13em;color:#8eaed2;font-weight:900;margin:8px 0}
+  .fullBtn{width:100%;border-radius:16px;padding:16px 14px;font-weight:900;margin-top:16px;background:#ffd27b;color:#162033;box-shadow:0 4px 0 #a77b3b}.fullBtn:active{transform:translateY(2px)}.back{background:none;color:#9caec7;padding:0;font-size:12px;text-align:left;margin-bottom:10px}
+  .resultCard{background:#1a2840;border:1px solid #33455e;border-radius:22px;padding:24px 18px;text-align:center}.bigEmoji{font-size:62px}.resultTitle{font-size:27px;font-weight:950;line-height:1.35;letter-spacing:-.05em;margin:10px 0}.resultText{font-size:13px;line-height:1.8;color:#b5c3d6;margin:0}.stats{display:flex;justify-content:space-around;gap:8px;background:#22314a;border-radius:16px;padding:15px 10px;margin:18px 0;font-size:12px}.stats b{display:block;font-size:16px;margin-top:6px}
+
+  .endingScreen{position:relative;flex:1;overflow:hidden;min-height:0;background:#070809}
+  .endingTop{position:absolute;top:12px;left:12px;right:12px;z-index:6;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;pointer-events:none}.endingChip,.endingScore{backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 12px;background:rgba(10,12,16,.48)}.endingChip{font-size:12px;font-weight:900}.endingScore{font-size:11px;color:#c0d0e4}
+  .endingScene{position:absolute;inset:0;z-index:1}
+  .sceneBase{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 65%,#151719 0%,#090a0b 60%,#050607 100%)}
+  .sceneLabel{position:absolute;left:50%;transform:translateX(-50%);top:70px;z-index:2;text-align:center;opacity:.78;pointer-events:none}.sceneLabel .emoji{font-size:19px}.sceneLabel .line1{font-size:13px;font-weight:900;margin-top:8px}
+  .flowerField{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none}
+  .tribute{position:absolute;width:clamp(110px,35%,175px);height:auto;aspect-ratio:1/1.5;display:block;transform-origin:47% 82%;filter:drop-shadow(0 6px 7px rgba(0,0,0,.28));animation:flowerFall .52s cubic-bezier(.17,.8,.26,1.08) both}
+  .tribute svg{width:100%;height:100%;display:block;overflow:visible}
+  
+
+  .endingBottom{position:absolute;left:0;right:0;bottom:0;z-index:7;padding:0 12px 12px;pointer-events:none}
+  .endingMini{display:flex;justify-content:center;margin-bottom:8px}
+  .endingMini .box{flex:0 0 auto;background:rgba(7,9,12,.56);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:5px 12px;backdrop-filter:blur(5px)}
+  .endingMini .value{font-size:12px;font-weight:700}
+  .miniBtns{display:flex;justify-content:center;gap:12px;pointer-events:none}
+  .tributeBtn{margin:0;width:74px;height:74px;border-radius:50%;padding:0;border:1px solid rgba(255,255,255,.25);background:radial-gradient(circle at 35% 25%,#e8e8e1,#b5b8b2);color:#1a2020;font-size:12px;font-weight:900;box-shadow:0 8px 30px #0008;pointer-events:auto}
+  .tributeBtn:active{transform:scale(.92)}
+  .clearBtn{width:45px;height:45px;border-radius:50%;padding:0;align-self:center;background:#24272caa;color:#eef4fb;font-size:11px;font-weight:900;border:1px solid #42546f;pointer-events:auto}
+
+  .memorialMessages{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+  .memoryNote{position:absolute;left:var(--x,45%);top:var(--y,40%);max-width:72%;padding:7px 11px;border-radius:15px;background:rgba(16,20,27,.79);border:1px solid #ffffff33;color:#f2f0e9;font-size:11px;font-weight:700;line-height:1.4;overflow-wrap:anywhere;box-shadow:0 4px 15px #0006;transform:rotate(var(--a,-5deg));pointer-events:none;animation:memorialWhisper 3.25s ease-out forwards}
+  
+  .tributeComposer{display:flex;pointer-events:auto;align-items:center;gap:7px;width:min(95%,310px);margin:10px auto 0;background:rgba(9,14,22,.66);border-radius:999px;padding:5px 6px 5px 13px;border:1px solid #ffffff33;backdrop-filter:blur(10px)}
+  .tributeComposer input{flex:1;min-width:0;border:0;background:transparent;outline:0;color:#fff;font-size:12px;padding:7px 1px}.tributeComposer input::placeholder{color:#bac1cb}.tributeComposer button{background:#d6d6d0;border-radius:999px;padding:9px 13px;font-size:11px;font-weight:850;color:#25262a;white-space:nowrap}
+
+  .sceneTapHint{position:absolute;top:150px;left:0;right:0;z-index:7;text-align:center;color:#bac1c8;font-size:11px;letter-spacing:.02em;pointer-events:none;opacity:.8}
+  .cigaretteMoments{position:absolute;inset:0;z-index:8;pointer-events:none;overflow:hidden}
+  .cigaretteMoment{position:absolute;width:220px;height:180px;transform:translate(-50%,-50%);pointer-events:none;animation:momentFade 4.2s ease-in-out forwards;filter:drop-shadow(0 8px 20px #0009)}
+  .cigaretteMoment svg{width:100%;height:100%;display:block;overflow:visible}
+  .cigaretteMoment .ember{animation:emberGlow .9s ease-in-out infinite alternate;transform-origin:center}
+  .cigaretteMoment .smoke{stroke-dasharray:3 8;animation:smokeRise 2.4s ease-out infinite;opacity:.66}
+  
+  
+  
+
+  /* 승리 클럽 */
+  .victoryScene{display:none;position:absolute;inset:0;z-index:3;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at 50% 65%,#432078 0%,#150c3b 47%,#070418 90%)}
+  .endingScreen.isWin{background:#09031b}
+  .endingScreen.isWin .sceneBase,.endingScreen.isWin .sceneLabel,.endingScreen.isWin .flowerField,.endingScreen.isWin .sceneTapHint,.endingScreen.isWin .cigaretteMoments{display:none}
+  .endingScreen.isWin .victoryScene{display:block}
+  .endingScreen.isWin .memoryNote{background:rgba(255,248,212,.9);border-color:#fff;color:#805008;box-shadow:0 7px 20px #8f692966}
+  .clubGlow{position:absolute;inset:0;background:radial-gradient(circle at 22% 26%,#e33caa50,transparent 33%),radial-gradient(circle at 82% 33%,#16d9ff47,transparent 36%),radial-gradient(circle at 51% 84%,#e39b263d,transparent 42%);animation:clubPulse 1.7s ease-in-out infinite alternate}
+  
+  .clubMirror{position:absolute;top:12%;left:50%;width:72px;height:72px;border-radius:50%;transform:translateX(-50%);background:repeating-linear-gradient(0deg,#d3e8ff 0 7px,#8097cc 8px 10px),repeating-linear-gradient(90deg,#c4d6ef 0 9px,#6573a5 10px 12px);background-blend-mode:multiply;box-shadow:0 0 25px #fff9,0 0 100px #d365ff92;animation:mirrorSwing 4s linear infinite;z-index:2}
+  .clubMirror:before{content:'';position:absolute;left:50%;bottom:100%;width:2px;height:90px;background:#c6b6e7}
+  
+  .clubLaser{position:absolute;left:50%;top:22%;height:78%;width:30%;transform-origin:top center;clip-path:polygon(49% 0,51% 0,100% 100%,0 100%);background:linear-gradient(180deg,#59e7ffad,transparent);mix-blend-mode:screen;filter:blur(5px);animation:laserMove 2.6s ease-in-out infinite alternate}
+  .clubLaser.b{background:linear-gradient(180deg,#ff4ecdcc,transparent);animation-delay:-1.3s;animation-duration:2.2s}
+  .clubLaser.c{background:linear-gradient(180deg,#effa72a8,transparent);animation-delay:-.4s;animation-duration:3.1s}
+  
+  .clubFloor{position:absolute;left:-30%;right:-30%;bottom:-18%;height:45%;transform:perspective(350px) rotateX(56deg);transform-origin:center top;background:repeating-linear-gradient(90deg,transparent 0 62px,#ee63fb55 63px 67px),repeating-linear-gradient(0deg,#1e1547 0 42px,#57d8ff66 43px 47px);box-shadow:0 0 50px #d341ec77}
+  .clubHeadline{position:absolute;left:0;right:0;top:30%;text-align:center;font-size:clamp(36px,12vw,64px);font-weight:1000;font-style:italic;letter-spacing:.1em;color:#fff9dc;text-shadow:0 0 12px #fff,0 0 34px #ff39de,0 0 65px #ff39de;animation:clubPulse .7s infinite alternate}
+  .clubDancers{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+  .clubDancer{position:absolute;left:var(--x);bottom:var(--y);width:64px;height:125px;transform:translateX(-50%) scale(var(--scale));transform-origin:bottom center;filter:drop-shadow(0 0 13px var(--clr));animation:dancerEnter .4s ease-out both}
+  .clubDancer .danceBody{position:absolute;inset:0;animation:danceBounce var(--tempo,.48s) ease-in-out infinite alternate}
+  .clubDancer .head{position:absolute;top:9px;left:20px;width:25px;height:25px;background:var(--clr);border-radius:50%;box-shadow:0 0 18px var(--clr)}
+  .clubDancer .torso{position:absolute;top:37px;left:24px;width:18px;height:46px;border-radius:10px;background:var(--clr)}
+  .clubDancer .arm,.clubDancer .leg{position:absolute;border-radius:12px;background:var(--clr);transform-origin:top center}
+  .clubDancer .arm{top:41px;width:9px;height:47px}.clubDancer .arm.left{left:19px;animation:armLeft .46s ease-in-out infinite alternate}.clubDancer .arm.right{right:18px;animation:armRight .6s ease-in-out infinite alternate}
+  .clubDancer .leg{top:77px;width:10px;height:43px}.clubDancer .leg.left{left:25px;rotate:17deg}.clubDancer .leg.right{right:23px;rotate:-20deg}
+  
+  
+  
+  
+  .clubTapHint{position:absolute;top:48%;left:0;right:0;text-align:center;font-size:11px;color:#ffffffc7;letter-spacing:.1em;z-index:5;pointer-events:none;animation:clubHintBlink 2s ease-in-out infinite}
+  
+  .clubFireworks{position:absolute;inset:0;pointer-events:none;z-index:9}
+  .clubFirework{position:absolute;left:var(--x);top:var(--y);width:0;height:0;z-index:9;pointer-events:none}
+  .clubSpark{position:absolute;left:0;top:0;width:7px;height:16px;border-radius:5px;background:var(--c);box-shadow:0 0 12px var(--c),0 0 26px var(--c);animation:clubBurst .83s cubic-bezier(.16,.64,.25,1) forwards;transform-origin:center}
+  
+  .endingScreen.isWin .tributeBtn{background:radial-gradient(circle at 30% 20%,#ff9ae9,#a14ff7);color:white;border:1px solid #ffffffbb;box-shadow:0 0 25px #e338df88;font-size:30px}
+  .endingScreen.isWin .endingMini .box{background:#19083bb3}
+  .endingScreen.isWin .endingChip,.endingScreen.isWin .endingScore{background:rgba(25,58,92,.42)}
+  .endingScreen.isWin .tributeComposer{background:#160b37c7;border-color:#ff6de66b}
+  .endingScreen.isWin .tributeComposer button{background:#f7a5f9;color:#340b48}
+
+
+  .footer{position:relative;z-index:7;flex-shrink:0;border-top:1px solid #283752;padding:12px 18px 16px;display:flex;justify-content:space-between;font-size:10px;color:#8398b4}
+  .toast{position:absolute;left:20px;right:20px;bottom:78px;z-index:30;background:#f5d9a0;color:#1a2435;border-radius:14px;padding:12px 14px;text-align:center;font-size:12px;font-weight:900;box-shadow:0 12px 40px rgba(0,0,0,.38);opacity:0;transform:translateY(10px);pointer-events:none;transition:.24s}.toast.show{opacity:1;transform:translateY(0)}
+  .connectionNote{position:absolute;top:54px;left:12px;right:12px;z-index:40;background:#f5d9a0;color:#1a2435;border-radius:10px;padding:9px;font-size:11px;text-align:center}
+
+  @media (prefers-reduced-motion: reduce) {
+    .clubGlow,.clubMirror,.clubLaser,.clubHeadline,.clubDancer .danceBody,.clubDancer .arm{animation:none}
+  }
+}
+
+/* keyframes (중첩 블록 밖에 있어야 함) */
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes flowerFall{from{opacity:0;translate:0 -65px;scale:1.13}65%{opacity:1}to{opacity:1;translate:0 0;scale:1}}
+@keyframes memorialWhisper{0%{opacity:0;translate:0 15px;scale:.9}13%{opacity:1;translate:0 0;scale:1}72%{opacity:1}100%{opacity:0;translate:0 -42px;scale:.98}}
+@keyframes momentFade{0%{opacity:0;scale:.8}12%{opacity:1;scale:1}76%{opacity:1}100%{opacity:0;scale:1.06}}
+@keyframes emberGlow{from{opacity:.35;filter:drop-shadow(0 0 2px #ff9d40)}to{opacity:1;filter:drop-shadow(0 0 10px #ff6d19)}}
+@keyframes smokeRise{from{stroke-dashoffset:35;opacity:.18;transform:translateY(8px)}to{stroke-dashoffset:-28;opacity:.75;transform:translateY(-9px)}}
+@keyframes clubPulse{to{filter:hue-rotate(100deg) brightness(1.9)}}
+@keyframes mirrorSwing{50%{rotate:15deg}100%{rotate:0deg}}
+@keyframes laserMove{from{transform:rotate(-60deg)}to{transform:rotate(60deg)}}
+@keyframes dancerEnter{from{opacity:0;translate:0 35px}to{opacity:1;translate:0 0}}
+@keyframes danceBounce{from{transform:translateY(4px) rotate(-7deg)}to{transform:translateY(-12px) rotate(8deg)}}
+@keyframes armLeft{from{transform:rotate(45deg)}to{transform:rotate(175deg)}}
+@keyframes armRight{from{transform:rotate(-40deg)}to{transform:rotate(-175deg)}}
+@keyframes clubHintBlink{50%{opacity:.25}}
+@keyframes clubBurst{from{opacity:1;transform:rotate(var(--a)) translateY(0) scale(1)}to{opacity:0;transform:rotate(var(--a)) translateY(calc(-1 * var(--r))) scale(.3)}}
+
+/* 시연 조작 (원본 v10 demoToggle/demoDrawer) */
+.memorialRoot {
+  .demoToggle{position:absolute;z-index:12;right:15px;bottom:19px;width:29px;height:29px;background:rgba(19,35,55,.5);color:#eef5ff;border:1px solid #ffffff50;border-radius:50%;font-size:15px;display:grid;place-items:center;backdrop-filter:blur(5px)}
+  .demoDrawer{position:absolute;z-index:14;bottom:57px;left:14px;right:14px;border:1px solid #ffffff55;background:rgba(15,26,43,.94);backdrop-filter:blur(15px);border-radius:18px;padding:14px;color:#fff;box-shadow:0 10px 40px #0008}
+  .demoTitle{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:12px;margin-bottom:12px}.demoTitle button{color:white;background:none;font-size:23px;padding:0 6px}
+  .demoButtons{display:flex;gap:7px}.demoButtons button{padding:11px 7px;font-size:11px;font-weight:800;background:#304764;color:white;border-radius:10px;flex:1}
+}
+
+/* 추모관 하단 이동 (HANDOFF: 새 경기 / 다른 경기) */
+.memorialRoot {
+  .logo{color:inherit;text-decoration:none}
+  .endingNav{display:flex;justify-content:center;gap:8px;margin-top:8px;pointer-events:auto}
+  .endingNav button{background:rgba(9,14,22,.66);color:#dfe6ee;border:1px solid #ffffff33;border-radius:999px;padding:7px 14px;font-size:11px;font-weight:800;backdrop-filter:blur(10px)}
+}
