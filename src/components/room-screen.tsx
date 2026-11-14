@@ -1,24 +1,120 @@
 'use client';
+// 원본 HTML(public/fan-demo.html)을 iframe으로 띄우고, Next 라우팅·Supabase와 메시지로 연결한다.
+// 메시지 규약은 docs/HANDOFF.md 참고.
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { joinRoom, actInRoom, subscribeRoom } from '@/lib/room';
-export function RoomScreen({roomId='sajik-01',screen='home',team='6'}:{roomId?:string;screen?:'home'|'pray'|'result'|'memorial';team?:string}){
- const frame=useRef<HTMLIFrameElement>(null);const router=useRouter();
- useEffect(()=>{
- let alive=true;
- const send=(data:object)=>{if(alive)frame.current?.contentWindow?.postMessage({source:'fan-host',...data},location.origin)};
- const refresh=()=>joinRoom(roomId).then(room=>send({type:'state',room})).catch(e=>send({type:'error',message:e.message}));
- const receive=async(e:MessageEvent)=>{
- if(e.origin!==location.origin||e.source!==frame.current?.contentWindow||e.data?.source!=='fan-demo')return;
- const m=e.data;
- if(m.type==='navigate'&&['pray','result','memorial'].includes(m.screen)&&/^[a-zA-Z0-9_-]{1,40}$/.test(m.room)){router.push(`/${m.screen}?room=${encodeURIComponent(m.room)}&team=${Number(m.team)||0}`)}
- if(m.type==='ready'&&screen!=='home')void refresh();
- if(m.type==='action'&&screen!=='home'&&['rain','sun','flowers'].includes(m.action)){try{await actInRoom(roomId,m.action);await refresh()}catch(e){send({type:'error',message:(e as Error).message})}}
- };
- window.addEventListener('message',receive);
- const unsubscribe=screen==='home'?()=>{}:subscribeRoom(roomId,room=>send({type:'state',room}));
- const timer=screen==='home'?undefined:setInterval(refresh,3000);
- return()=>{alive=false;window.removeEventListener('message',receive);unsubscribe();clearInterval(timer)};
- },[roomId,screen,router]);
- return <iframe ref={frame} title="비라도 와라 야구장" src={`/fan-demo.html?screen=${screen}&room=${encodeURIComponent(roomId)}&team=${encodeURIComponent(team)}`} style={{display:'block',width:'100%',height:'100dvh',border:0}}/>;
+import { actInRoom, getRoom, isRoomId, joinRoom, restartRoom, subscribeRoom, type Room } from '@/lib/room';
+
+export type Screen = 'home' | 'match' | 'pray' | 'result' | 'memorial';
+const ROOM_SCREENS: Screen[] = ['pray', 'result', 'memorial'];
+const ALL_SCREENS: Screen[] = ['home', 'match', ...ROOM_SCREENS];
+
+export type Scenario = 'win' | 'lose' | 'draw';
+export function screenHref(screen: Screen, room: string | undefined, team: number, result?: Scenario) {
+  const r = result ? `&result=${result}` : '';
+  if (screen === 'home') return `/?team=${team}`;
+  if (screen === 'match') return `/?screen=match&team=${team}${r}`;
+  return `/${screen}?room=${encodeURIComponent(room ?? '')}&team=${team}${r}`;
+}
+const isScenario = (v: unknown): v is Scenario => v === 'win' || v === 'lose' || v === 'draw';
+
+export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?: string; screen?: Screen; team?: number; result?: Scenario }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const router = useRouter();
+  const inRoom = ROOM_SCREENS.includes(screen) && !!roomId;
+
+  useEffect(() => {
+    let alive = true;
+    let lastStart = '';
+    let lastRoom: Room | null = null;
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    const send = (data: object) => {
+      if (alive) frame.current?.contentWindow?.postMessage({ source: 'fan-host', ...data }, location.origin);
+    };
+    const push = (room: Room) => {
+      const restarted = !!lastStart && lastStart !== room.started_at;
+      lastStart = room.started_at;
+      lastRoom = room;
+      send({ type: 'state', room, restarted });
+    };
+    const fail = (e: unknown) => send({ type: 'error', message: (e as Error).message });
+    const refresh = async () => {
+      if (!roomId) return;
+      try {
+        const room = (await getRoom(roomId)) ?? (await joinRoom(roomId));
+        push(room);
+      } catch (e) {
+        fail(e);
+      }
+    };
+    const enter = async () => {
+      if (!roomId) return;
+      try {
+        // 기도관 진입 때만 입장 RPC (종료 후 60초 지난 룸이면 새 경기). 결과·추모관은 읽기만.
+        push(screen === 'pray' ? await joinRoom(roomId) : ((await getRoom(roomId)) ?? (await joinRoom(roomId))));
+      } catch (e) {
+        fail(e);
+      }
+    };
+    const softRefresh = () => {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(refresh, 400);
+    };
+
+    const receive = async (e: MessageEvent) => {
+      if (e.origin !== location.origin || e.source !== frame.current?.contentWindow || e.data?.source !== 'fan-demo') return;
+      const m = e.data;
+      const t = Number.isInteger(Number(m.team)) ? Number(m.team) : (team ?? 6);
+      const res = isScenario(m.result) ? m.result : result;
+      if (m.type === 'navigate' && ALL_SCREENS.includes(m.screen)) {
+        const room = isRoomId(m.room) ? m.room : roomId;
+        if (ROOM_SCREENS.includes(m.screen) && !room) return;
+        router.push(screenHref(m.screen, room, t, res));
+      }
+      // iframe이 늦게 준비돼도 마지막 상태를 다시 보내 연결 누락 방지
+      if (m.type === 'ready' && inRoom) {
+        if (lastRoom) send({ type: 'state', room: lastRoom, restarted: false });
+        else void enter();
+      }
+      if (m.type === 'retry' && inRoom) void enter();
+      if (m.type === 'action' && inRoom && ['rain', 'sun', 'flowers'].includes(m.action)) {
+        try {
+          await actInRoom(roomId!, m.action);
+          softRefresh();
+        } catch (err) {
+          fail(err);
+        }
+      }
+      if (m.type === 'restart' && inRoom) {
+        try {
+          const room = await restartRoom(roomId!);
+          push(room);
+          router.push(screenHref('pray', roomId, t, res));
+        } catch (err) {
+          fail(err);
+        }
+      }
+    };
+    window.addEventListener('message', receive);
+    const unsubscribe = inRoom ? subscribeRoom(roomId!, push) : () => {};
+    const timer = inRoom ? setInterval(refresh, 3000) : undefined;
+    if (inRoom) void enter();
+    return () => {
+      alive = false;
+      window.removeEventListener('message', receive);
+      unsubscribe();
+      clearInterval(timer);
+      clearTimeout(refreshTimer);
+    };
+  }, [roomId, screen, team, result, inRoom, router]);
+
+  const qs = new URLSearchParams({ screen, ...(roomId ? { room: roomId } : {}), ...(team !== undefined ? { team: String(team) } : {}), ...(result ? { result } : {}) });
+  return (
+    <iframe
+      ref={frame}
+      title="비라도 와라 야구장"
+      src={`/fan-demo.html?${qs}`}
+      style={{ display: 'block', width: '100%', height: '100dvh', border: 0 }}
+    />
+  );
 }

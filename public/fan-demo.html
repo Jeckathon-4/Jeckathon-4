@@ -299,10 +299,11 @@ html,body{height:100%;background:#eef2ee}.wrapper{display:block;max-width:480px;
               <div class="side"><span id="oppIcon">🦅</span><span id="oppTeamText">한화 이글스</span></div>
             </div>
             <div class="fixtureFoot">18:30 · 사직 야구장</div>
-            <div class="fixtureMeta">지는 팀은 비 · 이기는 팀은 해</div>
+            <div class="fixtureMeta">같은 경기 팬끼리 비·해가 실시간으로 합쳐져요 · 지는 팀은 비, 이기는 팀은 해</div>
           </div>
-          <label for="sharedRoom" style="font-size:12px">친구와 같은 룸 이름으로 입장하세요</label><input class="roomInput" id="sharedRoom" value="sajik-01" maxlength="40" aria-label="룸 이름"><button class="fullBtn" onclick="enterArena()">경기장 입장</button>
-          <button class="subBtn" onclick="randomOpponent()">상대 바꾸기</button>
+          <div class="kicker" style="margin-top:6px">오늘의 시나리오</div>
+          <div class="miniBtns scenario" id="scenarioBtns"><button class="ghostBtn" data-s="win" onclick="pickScenario('win')">이긴 경기</button><button class="ghostBtn" data-s="lose" onclick="pickScenario('lose')">진 경기</button><button class="ghostBtn" data-s="draw" onclick="pickScenario('draw')">비긴 경기</button></div>
+          <button class="fullBtn" onclick="enterArena()">경기장 입장</button>
         </div>
       </section>
 
@@ -755,41 +756,5 @@ $('v4').querySelector('.endingScreen').addEventListener('click',sighInWaitingRoo
 
 renderTeamGrid();syncTeams();renderArena();
 </script>
-<script>
-const initial = new URLSearchParams(location.search);
-let sharedRoom = initial.get('room') || 'sajik-01';
-let connected = false, sharedEnded = false, sharedClosed = false;
-const baseGo = go;
-function tellParent(data){parent.postMessage({source:'fan-demo',...data},location.origin)}
-go = function(step){baseGo(step);if(step>=2)tellParent({type:'navigate',screen:['','','pray','result','memorial'][step],room:sharedRoom,team:state.myTeam});};
-enterArena = function(){const value=$('sharedRoom').value.trim();if(!/^[a-zA-Z0-9_-]{1,40}$/.test(value)){toast('룸 이름은 영문, 숫자, -와 _로 입력해주세요');return}sharedRoom=value;go(2)};
-addForce = function(type){if(!connected||sharedClosed)return;animateWeatherClick(type);showChant(type);tellParent({type:'action',action:type})};
-addTribute = function(message=''){if(!connected||!sharedEnded){toast('경기 종료 후 함께 헌화해요');return}tellParent({type:'action',action:'flowers'});if(message)toast('꽃을 보냈어요. 방명록 저장은 준비 중이에요.')};
-clearTributes = function(){toast('함께 놓은 꽃은 지울 수 없어요')};
-changeScore = advanceInning = function(){toast('같은 룸의 경기 시계에 따라 자동 진행돼요')};
-finishGame = function(){if(!sharedEnded){toast('아직 경기가 진행 중이에요');return}go(3)};
-const team=Number(initial.get('team')||6);if(Number.isInteger(team)&&team>=0&&team<teams.length){state.myTeam=team;state.oppTeam=team===1?6:1;syncTeams();renderTeamGrid()}
-randomOpponent=function(){toast('공유 데모 경기는 롯데 vs 한화로 진행돼요')};
-$('sharedRoom').value=sharedRoom;
-const screen=initial.get('screen');if(screen&&screen!=='home'){baseGo({pray:2,result:3,memorial:4}[screen]||2)}
-window.addEventListener('message',event=>{
- if(event.origin!==location.origin||event.source!==parent||event.data?.source!=='fan-host')return;
- const m=event.data;
- if(m.type==='error'){$('connectionNote').textContent=m.message;connected=false;return}
- if(m.type!=='state')return;
- connected=true;$('connectionNote').textContent='';
- const r=m.room;state.tears=r.rain;state.suns=r.sun;
- const elapsed=Math.max(0,(Date.now()-Date.parse(r.started_at))/1000);
- state.inning=Math.min(9,Math.floor(elapsed/20)+1);state.half='말';sharedClosed=elapsed>=100;sharedEnded=elapsed>=180;
- state.myScore=state.myTeam===1?4:2;state.oppScore=state.myTeam===1?2:4;
- renderArena();$('rainAction').disabled=sharedClosed;$('sunAction').disabled=sharedClosed;
- if(sharedClosed)$('roleText').textContent=sharedEnded?'경기 종료 · 오늘도 함께였어요':'기도 마감 · 경기 결과를 기다려요';
- $('inningTag').textContent=sharedEnded?'경기 종료':state.inning+'회 말 · LIVE';
- state.tributes=Array.from({length:Math.min(r.flowers,300)},(_,i)=>({x:8+((i*.61803398875)%1)*77,y:Math.min(78,10+Math.floor(i/9)*11+(i*7)%15),size:.68+(i%9)*.05,rotation:-53+(i*29)%107,seed:i*7.31,message:''}));state.flowers=r.flowers;
- if(state.step===3){renderResult();if(!sharedEnded){$('resultTitle').textContent='아직 끝나지 않았어요';$('resultDesc').textContent='9회 종료 후 결과가 확정됩니다.'}}
- if(state.step===4)renderEnding();
- if(sharedEnded&&state.step===2)go(3);
-});
-tellParent({type:'ready'});
-</script></body>
+<script src="/room-bridge.js"></script></body>
 </html>

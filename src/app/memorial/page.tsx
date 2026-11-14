@@ -1,2 +1,13 @@
-import {RoomScreen} from '@/components/room-screen';
-export default async function Page({searchParams}:{searchParams:Promise<{room?:string;team?:string}>}){const {room,team}=await searchParams;return <RoomScreen screen="memorial" team={team} roomId={room&&/^[a-zA-Z0-9_-]{1,40}$/.test(room)?room:'sajik-01'}/>}
+import { redirect } from 'next/navigation';
+import { RoomScreen } from '@/components/room-screen';
+import { parseResult, parseRoom, parseTeam } from '@/lib/params';
+
+type Q = Promise<{ room?: string; team?: string; result?: string }>;
+export default async function Page({ searchParams }: { searchParams: Q }) {
+  const q = await searchParams;
+  const room = parseRoom(q.room);
+  const team = parseTeam(q.team);
+  // 룸 없이 직접 들어오면 팀 선택으로
+  if (!room) redirect(team !== undefined ? `/?team=${team}` : '/');
+  return <RoomScreen screen="memorial" roomId={room} team={team} result={parseResult(q.result)} />;
+}
