@@ -77,7 +77,7 @@ window.copyInvite = async function (id) {
 };
 const style = document.createElement('style');
 style.textContent = `.scenarioDesc{margin-top:16px;background:#1a2840;border:1px solid #33445d;border-radius:16px;padding:14px 16px;font-size:12px;line-height:1.7;color:#c9d6e8}
-.scenarioDesc b{display:block;font-size:14px;color:#eef3fb;margin-bottom:6px}.scenarioDesc ul{margin:0;padding-left:16px}.scenarioDesc .rule{margin-top:10px;padding-top:10px;border-top:1px solid #2c3d58;font-size:11px;color:#8ea3c0}
+.scenarioDesc p{margin:0 0 8px}.scenarioDesc p:last-child{margin:0}.scenarioDesc b{color:#ffce77}.scenarioDesc ul{margin:0;padding-left:16px}.scenarioDesc .rule{margin-top:10px;padding-top:10px;border-top:1px solid #2c3d58;font-size:11px;color:#8ea3c0}
 .scenario{margin-bottom:4px;grid-template-columns:repeat(3,1fr)}.scenario .ghostBtn{padding:12px 6px;font-size:13px}.scenario .on{background:#f6d38b;color:#17202e;border-color:#f6d38b}.logo{cursor:pointer}.connectionNote{display:none;cursor:pointer}.minimalControls{bottom:128px}.endGame{pointer-events:auto;margin-top:12px;width:168px;border:0;border-radius:16px;padding:12px;background:#f2d08b;color:#172339;font-weight:900}`;
 document.head.appendChild(style);
 
@@ -96,9 +96,11 @@ enterArena = function () { navigate('pray', matchOf(fanTeam).id); };
 window.pickScenario = function (key) {
   scenario = key;
   document.querySelectorAll('#scenarioBtns button').forEach((b) => b.classList.toggle('on', b.dataset.s === key));
-  const sc = SCENARIOS[key], box = $('scenarioDesc');
-  if (box) box.innerHTML = `<b>${sc.title}</b><ul>${sc.lines.map((l) => `<li>${l}</li>`).join('')}</ul>
-    <div class="rule">⏱ 20초마다 1이닝 · 5회(1분 40초) 기도 마감 · 9회(3분) 경기 종료<br>👥 같은 경기를 고른 사람끼리 비·해·헌화 수가 실시간으로 합쳐져요</div>`;
+  const box = $('scenarioDesc');
+  // 시나리오 설명은 모든 시나리오에 같은 안내 문구
+  if (box) box.innerHTML = `<p>실제 서비스는 실시간(LIVE) 경기 데이터를 기반으로 운영됩니다.</p>
+    <p>MVP에서는 기능 시연을 위해 승리·패배·무승부 시나리오를 선택할 수 있도록 구성했습니다.</p>
+    <p>선택한 시나리오에 따라 경기 상황과 날씨 변화를 체험할 수 있으며, 경기 종료 후 결과에 따라 <b>승리 클럽·추모관·심야 대합실</b>로 이동합니다.</p>`;
 };
 document.querySelector('.logo')?.addEventListener('click', () => navigate('home'));
 
