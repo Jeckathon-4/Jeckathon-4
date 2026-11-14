@@ -82,31 +82,28 @@
   .clubDancers{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
   .clubDancer{position:absolute;left:var(--x);bottom:var(--y);width:64px;height:125px;transform:translateX(-50%) scale(var(--scale));transform-origin:bottom center;filter:drop-shadow(0 0 10px var(--clr));animation:dancerEnter .4s ease-out both}
   .clubDancer .danceBody{position:absolute;inset:0}
-  .clubDancer .head{position:absolute;top:9px;left:20px;width:25px;height:25px;background:var(--clr);border-radius:50%;box-shadow:0 0 14px var(--clr)}
+  .clubDancer .head{position:absolute;top:16px;left:20px;width:25px;height:25px;background:var(--clr);border-radius:50%;box-shadow:0 0 14px var(--clr)}
   .clubDancer .torso{position:absolute;top:37px;left:24px;width:18px;height:46px;border-radius:10px;background:var(--clr)}
   .clubDancer .arm,.clubDancer .leg{position:absolute;border-radius:12px;background:var(--clr);transform-origin:top center}
-  .clubDancer .arm{top:41px;width:9px;height:47px}.clubDancer .arm.left{left:19px}.clubDancer .arm.right{right:18px}
-  .clubDancer .leg{top:77px;width:10px;height:43px}
+  .clubDancer .arm{top:38px;width:9px;height:46px}.clubDancer .arm.left{left:22px}.clubDancer .arm.right{right:20px}
+  .clubDancer .leg{top:74px;width:10px;height:46px}.clubDancer .leg.left{left:25px}.clubDancer .leg.right{right:23px}
   .clubDancer.bounce .danceBody{animation:danceBounce var(--tempo,.48s) ease-in-out infinite alternate}
   .clubDancer.bounce .arm.left{animation:armLeft var(--tempo,.46s) ease-in-out infinite alternate}
   .clubDancer.bounce .arm.right{animation:armRight calc(var(--tempo,.48s) * 1.15) ease-in-out infinite alternate}
-  .clubDancer.bounce .leg.left{rotate:17deg}.clubDancer.bounce .leg.right{rotate:-20deg}
-  .clubDancer.wave .danceBody{animation:danceWave var(--tempo,.5s) ease-in-out infinite alternate}
-  .clubDancer.wave .arm.left{animation:armWaveL var(--tempo,.42s) ease-in-out infinite alternate}
-  .clubDancer.wave .arm.right{animation:armWaveR var(--tempo,.42s) ease-in-out infinite alternate}
+  .clubDancer.bounce .leg.left{rotate:8deg}.clubDancer.bounce .leg.right{rotate:-8deg}
+  .clubDancer.wave .danceBody{animation:danceWave var(--tempo,.7s) ease-in-out infinite alternate}
+  .clubDancer.wave .arm.left{animation:armWaveL var(--tempo,.7s) ease-in-out infinite alternate}
+  .clubDancer.wave .arm.right{animation:armWaveR var(--tempo,.7s) ease-in-out infinite alternate}
   .clubDancer.wave .leg.left{rotate:6deg}.clubDancer.wave .leg.right{rotate:-6deg}
-  .clubDancer.spin .danceBody{animation:danceSpin calc(var(--tempo,.48s) * 2.4) linear infinite;transform-origin:50% 42%}
-  .clubDancer.spin .arm.left{transform:rotate(92deg)}.clubDancer.spin .arm.right{transform:rotate(-92deg)}
-  .clubDancer.spin .leg.left{rotate:8deg}.clubDancer.spin .leg.right{rotate:-8deg}
-  .clubDancer.hop .danceBody{animation:danceHop calc(var(--tempo,.4s) * 1.15) ease-in infinite}
+  .clubDancer.hop .danceBody{animation:danceHop calc(var(--tempo,.55s) * 1.2) ease-in infinite}
   .clubDancer.hop .arm.left{animation:armPump var(--tempo,.4s) ease-in-out infinite alternate}
   .clubDancer.hop .arm.right{animation:armPump var(--tempo,.4s) ease-in-out infinite alternate-reverse}
   .clubDancer.hop .leg.left{animation:legHopL var(--tempo,.4s) ease-in-out infinite alternate}
   .clubDancer.hop .leg.right{animation:legHopR var(--tempo,.4s) ease-in-out infinite alternate-reverse}
-  .clubDancer.sway .danceBody{animation:danceSway calc(var(--tempo,.55s) * 1.35) ease-in-out infinite alternate;transform-origin:50% 100%}
-  .clubDancer.sway .arm.left{animation:armPoint var(--tempo,.5s) ease-in-out infinite alternate}
-  .clubDancer.sway .arm.right{transform:rotate(-28deg)}
-  .clubDancer.sway .leg.left{rotate:22deg}.clubDancer.sway .leg.right{rotate:-4deg}
+  .clubDancer.sway .danceBody{animation:danceSway calc(var(--tempo,.7s) * 1.2) ease-in-out infinite alternate;transform-origin:50% 100%}
+  .clubDancer.sway .arm.left{animation:armPoint var(--tempo,.7s) ease-in-out infinite alternate}
+  .clubDancer.sway .arm.right{transform:rotate(-22deg)}
+  .clubDancer.sway .leg.left{rotate:10deg}.clubDancer.sway .leg.right{rotate:-4deg}
   
   
   
@@ -144,19 +141,18 @@
 @keyframes mirrorSwing{50%{rotate:15deg}100%{rotate:0deg}}
 @keyframes laserMove{from{transform:rotate(-60deg)}to{transform:rotate(60deg)}}
 @keyframes dancerEnter{from{opacity:0;translate:0 35px}to{opacity:1;translate:0 0}}
-@keyframes danceBounce{from{transform:translateY(4px) rotate(-7deg)}to{transform:translateY(-12px) rotate(8deg)}}
-@keyframes armLeft{from{transform:rotate(45deg)}to{transform:rotate(175deg)}}
-@keyframes armRight{from{transform:rotate(-40deg)}to{transform:rotate(-175deg)}}
-@keyframes danceWave{from{transform:translateX(-8px) rotate(-8deg)}to{transform:translateX(8px) rotate(8deg)}}
-@keyframes armWaveL{from{transform:rotate(115deg)}to{transform:rotate(205deg)}}
-@keyframes armWaveR{from{transform:rotate(-115deg)}to{transform:rotate(-205deg)}}
-@keyframes danceSpin{to{transform:rotate(360deg)}}
-@keyframes danceHop{0%,100%{transform:translateY(0)}32%{transform:translateY(-20px)}52%{transform:translateY(0)}}
-@keyframes armPump{from{transform:rotate(24deg)}to{transform:rotate(155deg)}}
-@keyframes legHopL{from{transform:rotate(2deg)}to{transform:rotate(42deg)}}
-@keyframes legHopR{from{transform:rotate(-2deg)}to{transform:rotate(-42deg)}}
-@keyframes danceSway{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
-@keyframes armPoint{from{transform:rotate(140deg)}to{transform:rotate(190deg)}}
+@keyframes danceBounce{from{transform:translateY(1px) rotate(-3deg)}to{transform:translateY(-6px) rotate(3deg)}}
+@keyframes armLeft{from{transform:rotate(8deg)}to{transform:rotate(52deg)}}
+@keyframes armRight{from{transform:rotate(-8deg)}to{transform:rotate(-52deg)}}
+@keyframes danceWave{from{transform:translateX(-4px) rotate(-3deg)}to{transform:translateX(4px) rotate(3deg)}}
+@keyframes armWaveL{from{transform:rotate(62deg)}to{transform:rotate(98deg)}}
+@keyframes armWaveR{from{transform:rotate(-62deg)}to{transform:rotate(-98deg)}}
+@keyframes danceHop{0%,100%{transform:translateY(0)}35%{transform:translateY(-8px)}55%{transform:translateY(0)}}
+@keyframes armPump{from{transform:rotate(10deg)}to{transform:rotate(58deg)}}
+@keyframes legHopL{from{transform:rotate(4deg)}to{transform:rotate(16deg)}}
+@keyframes legHopR{from{transform:rotate(-4deg)}to{transform:rotate(-16deg)}}
+@keyframes danceSway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+@keyframes armPoint{from{transform:rotate(72deg)}to{transform:rotate(108deg)}}
 @keyframes clubHintBlink{50%{opacity:.25}}
 @keyframes clubBurst{from{opacity:1;transform:rotate(var(--a)) translateY(0) scale(1)}to{opacity:0;transform:rotate(var(--a)) translateY(calc(-1 * var(--r))) scale(.3)}}
 
