@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { parseResult, parseRoom, parseTeam } from '@/lib/params';
+import { Bgm } from '@/components/bgm';
 import { EndingView } from './_components/EndingView';
 import { parseScore } from './_components/scene';
 
@@ -10,13 +11,19 @@ export default async function Page({ searchParams }: { searchParams: Q }) {
   const team = parseTeam(q.team);
   // 룸 없이 직접 들어오면 팀 선택으로
   if (!room) redirect(team !== undefined ? `/?team=${team}` : '/');
+  const result = parseResult(q.result);
+  // BGM: 시나리오별 (진 경기 = 추모 오르간, 이긴 경기 = 클럽, 비긴 경기 = 막차 승강장)
+  const track = result === 'win' ? 'win' : result === 'draw' ? 'draw' : 'loss';
   return (
+    <>
+    <Bgm track={track} />
     <EndingView
       roomId={room}
       team={team ?? 6}
-      result={parseResult(q.result)}
+      result={result}
       my={parseScore(q.my)}
       opp={parseScore(q.opp)}
     />
+    </>
   );
 }

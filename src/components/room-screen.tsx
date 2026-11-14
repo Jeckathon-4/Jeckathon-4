@@ -25,6 +25,7 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
 
   useEffect(() => {
     let alive = true;
+    const win = frame.current?.contentWindow;
     let lastStart = '';
     let lastRoom: Room | null = null;
     let refreshTimer: ReturnType<typeof setTimeout> | undefined;
@@ -99,7 +100,9 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
     const unsubscribe = inRoom ? subscribeRoom(roomId!, push) : () => {};
     const timer = inRoom ? setInterval(refresh, 3000) : undefined;
     if (inRoom) void enter();
+    send({ type: 'resume' });
     return () => {
+      win?.postMessage({ source: 'fan-host', type: 'pause' }, location.origin);
       alive = false;
       window.removeEventListener('message', receive);
       unsubscribe();
@@ -113,6 +116,7 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
     <iframe
       ref={frame}
       title="비라도 와라 야구장"
+      allow="autoplay; clipboard-write"
       src={`/fan-demo.html?${qs}`}
       style={{ display: 'block', width: '100%', height: '100dvh', border: 0 }}
     />

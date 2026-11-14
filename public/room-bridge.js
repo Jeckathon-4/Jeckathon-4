@@ -33,7 +33,7 @@ if (manualEnd) sharedEnded = true;
 
 function tellParent(data) { parent.postMessage({ source: 'fan-demo', ...data }, location.origin); }
 function navigate(screen, room) {
-  if (navigating) return;
+  if (navigating || (typeof paused !== 'undefined' && paused)) return;
   navigating = true; setTimeout(() => (navigating = false), 1500);
   tellParent({ type: 'navigate', screen, room: room ?? roomParam, team: fanTeam, result: scenario });
 }
@@ -48,6 +48,17 @@ if (match) {
 } else {
   state.myTeam = fanTeam; state.oppTeam = fanTeam === 1 ? 6 : 1;
 }
+// ---- 구단 엠블럼 (출처: KBO 공식 사이트 엠블럼 이미지, public/logos) ----
+const LOGO_CODES = ['LG', 'HH', 'SK', 'SS', 'NC', 'KT', 'LT', 'HT', 'OB', 'WO'];
+const logoImg = (i, h) => `<img src="/logos/${LOGO_CODES[i]}.png" alt="${teams[i].name}" style="height:${h}px;width:auto;display:inline-block;vertical-align:middle">`;
+const baseRenderTeamGrid = renderTeamGrid;
+renderTeamGrid = function () { baseRenderTeamGrid(); document.querySelectorAll('#teamGrid .teamBtn .icon').forEach((el, i) => { el.innerHTML = logoImg(i, 30); }); };
+const baseSyncTeams = syncTeams;
+syncTeams = function () {
+  baseSyncTeams();
+  $('myIcon').innerHTML = logoImg(state.myTeam, 44); $('oppIcon').innerHTML = logoImg(state.oppTeam, 44);
+  $('sbMyIcon').innerHTML = logoImg(state.myTeam, 26); $('sbOppIcon').innerHTML = logoImg(state.oppTeam, 26);
+};
 syncTeams(); renderTeamGrid();
 const baseSelectTeam = selectTeam;
 selectTeam = function (i) { baseSelectTeam(i); fanTeam = i; };
@@ -130,8 +141,24 @@ resetDemo = function () {
 };
 document.querySelectorAll('#v4 .ghostBtn').forEach((b) => { if (b.textContent.trim() === '초기화') b.textContent = '새 경기'; });
 
+// ---- BGM: 기도관 = 긴장, 끝난 뒤 결과·추모관 = 시나리오별(패배 오르간 / 승리 클럽 / 무승부 막차) ----
+let paused = false;
+function updateBgm() {
+  if (!window.BGM) return;
+  if (paused) { BGM.play(null); return; }
+  const end = { lose: 'loss', win: 'win', draw: 'draw' }[scenario];
+  BGM.play(state.step === 2 ? 'pray' : state.step >= 3 ? (sharedEnded ? end : 'pray') : null);
+}
+const bgmBtn = document.createElement('button');
+bgmBtn.className = 'bgmToggle'; bgmBtn.setAttribute('aria-label', '배경음악 켜기/끄기');
+bgmBtn.textContent = window.BGM?.muted ? '🔇' : '🔊';
+bgmBtn.onclick = () => { bgmBtn.textContent = BGM.toggleMute() ? '🔇' : '🔊'; };
+document.querySelector('.header')?.insertBefore(bgmBtn, $('headerTag'));
+style.textContent += `.bgmToggle{margin-left:auto;margin-right:8px;background:none;border:0;font-size:15px;padding:4px;cursor:pointer}`;
+
 // ---- 초기 화면 ----
 const initialStep = STEP_SCREEN.indexOf(screenParam);
+if (inRoom && initialStep >= 3) { const sc = scoreAt(GAME_END_SEC); state.myScore = sc.my; state.oppScore = sc.opp; }
 baseGo(initialStep);
 if (initialStep === 1) {
   const m = matchOf(fanTeam);
@@ -154,13 +181,15 @@ $('connectionNote').addEventListener('click', () => { if (inRoom) { note('다시
 window.addEventListener('message', (event) => {
   if (event.origin !== location.origin || event.source !== parent || event.data?.source !== 'fan-host') return;
   const m = event.data;
+  if (m.type === 'pause') { paused = true; updateBgm(); return; }
+  if (m.type === 'resume') { paused = false; updateBgm(); return; }
   if (m.type === 'error') { connected = false; note(`${m.message} (눌러서 다시 시도)`); return; }
   if (m.type !== 'state' || !m.room) return;
   applyRoom(m.room, m.restarted);
 });
 let lastRoomState = null;
 setInterval(() => {
-  if (!lastRoomState) return;
+  if (!lastRoomState || paused) return;
   const e = (Date.now() - Date.parse(lastRoomState.started_at)) / 1000;
   const inning = Math.min(9, Math.floor(e / INNING_SEC) + 1);
   if (e >= PRAY_CLOSE_SEC !== sharedClosed || e >= GAME_END_SEC !== sharedEnded || (state.step === 2 && inning !== state.inning)) applyRoom(lastRoomState, false);
@@ -197,6 +226,8 @@ function applyRoom(r, restarted) {
     if (!sharedEnded) { $('resultTitle').textContent = '아직 끝나지 않았어요'; $('resultDesc').textContent = `${state.inning}회 진행 중 · 9회 종료 후 결과가 확정됩니다.`; }
   }
   if (state.step === 4) { if (!sharedEnded) { navigate('result'); return; } renderEnding(); }
+  updateBgm();
   if (sharedEnded && state.step === 2) navigate('result');
 }
+updateBgm();
 tellParent({ type: 'ready' });
