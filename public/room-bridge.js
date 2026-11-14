@@ -91,6 +91,12 @@ addForce = function (type) {
   if (throttled()) return;
   animateWeatherClick(type); showChant(type); tellParent({ type: 'action', action: type });
 };
+const baseSaveChant = saveChant;
+saveChant = function (e) {
+  if (!connected) { e.preventDefault(); toast('경기장에 연결하는 중이에요'); return; }
+  if (sharedClosed) { e.preventDefault(); toast('기도 마감 · 한마디는 여기까지예요'); return; }
+  baseSaveChant(e);
+};
 addTribute = function (message = '') {
   if (!connected) { toast('추모관에 연결하는 중이에요'); return; }
   if (!sharedEnded) { toast('경기 종료 후 함께 헌화해요'); return; }
@@ -158,6 +164,8 @@ function applyRoom(r, restarted) {
 
   renderArena();
   $('rainAction').disabled = sharedClosed; $('sunAction').disabled = sharedClosed;
+  document.querySelector('.chantToggle').disabled = sharedClosed;
+  if (sharedClosed) $('chantComposer').classList.add('hidden');
   if (sharedClosed) $('roleText').textContent = sharedEnded ? '경기 종료 · 오늘도 함께였어요' : '5회 성립 · 이제 비가 와도 집니다';
   $('inningTag').textContent = sharedEnded ? '경기 종료' : `${state.inning}회 말 · LIVE`;
 
