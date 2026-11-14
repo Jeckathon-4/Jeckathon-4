@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { actInRoom, restartRoom } from '@/lib/room';
+import { ENDING_FIELD, actInRoom, restartRoom } from '@/lib/room';
 import { AppFrame } from './AppFrame';
 import { DemoDrawer } from './DemoDrawer';
 import { Chrysanthemum } from './Chrysanthemum';
@@ -52,7 +52,9 @@ export function EndingView({
   const mood = moodOf(myScore, oppScore);
   const copy = ENDING_COPY[mood];
   const ended = room !== null && elapsed >= GAME_END_SEC;
-  const count = room?.flowers ?? 0;
+  // 끝화면별로 따로 세기 (이긴 팀 댄서가 진 팀 헌화에 섞이지 않게)
+  const field = ENDING_FIELD[mood];
+  const count = room?.[field] ?? 0;
 
   // 종료 전에 추모관으로 들어오면 결과 화면으로 (HANDOFF 플로우)
   const notEnded = room !== null && elapsed < GAME_END_SEC;
@@ -103,9 +105,9 @@ export function EndingView({
         } as CSSProperties,
       }, 3350);
     }
-    setRoom((r) => (r ? { ...r, flowers: r.flowers + 1 } : r));
+    setRoom((r) => (r ? { ...r, [field]: (r[field] ?? 0) + 1 } : r));
     try {
-      await actInRoom(roomId, 'flowers');
+      await actInRoom(roomId, field);
     } catch (e) {
       toast.show((e as Error).message);
     }
