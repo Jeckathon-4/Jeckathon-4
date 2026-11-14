@@ -25,7 +25,7 @@ import {
 } from './scene';
 
 type Note = { id: number; text: string; style: CSSProperties };
-type Spot = { id: number; x: number; y: number; text?: string; sparks?: number[]; kind?: 'cig' | 'glass'; rot?: number };
+type Spot = { id: number; x: number; y: number; text?: string; sparks?: number[]; kind?: 'cig' | 'bottle'; rot?: number };
 
 const MAX_FLOWERS = 300;
 const MAX_FIGURES = 120;
@@ -132,7 +132,7 @@ export function EndingView({
       // 담배 또는 술잔을 랜덤으로. 담배는 360도 아무 방향으로나 놓인다
       const x = Math.max(90, Math.min(rect.width - 90, px));
       const y = Math.max(150, Math.min(rect.height - 180, py));
-      const kind = Math.random() < 0.5 ? 'cig' : 'glass';
+      const kind = Math.random() < 0.5 ? 'cig' : 'bottle';
       const rot = kind === 'cig' ? Math.random() * 360 : -15 + Math.random() * 30;
       pushTemp(setSpots, { id, x, y, kind, rot }, 4300);
     } else if (mood === 'win') {
@@ -178,7 +178,13 @@ export function EndingView({
                     <div
                       key={i}
                       className={`tribute ${initialFlowers !== null && i >= initialFlowers ? 'fresh' : ''}`}
-                      style={{ left: `${f.x}%`, bottom: `${f.y}%`, rotate: `${f.rotation}deg`, scale: f.size, zIndex: f.z }}
+                      style={{
+                        left: `${f.x}%`,
+                        bottom: `${f.y}%`,
+                        rotate: `${f.rotation}deg`,
+                        scale: `${f.flip ? -f.size : f.size} ${f.size}`,
+                        zIndex: f.z,
+                      }}
                     >
                       <Chrysanthemum seed={f.seed} />
                     </div>
@@ -281,7 +287,7 @@ export function EndingView({
               {mood === 'loss' &&
                 spots.map((s) => (
                   <div key={s.id} className="cigaretteMoment" style={{ left: s.x, top: s.y }}>
-                    {s.kind === 'glass' ? <SojuGlass rot={s.rot ?? 0} /> : <Cigarette rot={s.rot ?? 0} />}
+                    {s.kind === 'bottle' ? <SojuBottle rot={s.rot ?? 0} /> : <Cigarette rot={s.rot ?? 0} />}
                   </div>
                 ))}
             </div>
@@ -357,17 +363,27 @@ function Cigarette({ rot }: { rot: number }) {
   );
 }
 
-/** 술잔(소주잔): 투명한 잔에 술이 담긴 모습 */
-function SojuGlass({ rot }: { rot: number }) {
+/** 소주병: 초록 병에 빨간 뚜껑 (상표 로고는 넣지 않은 일반 소주병) */
+function SojuBottle({ rot }: { rot: number }) {
   return (
     <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g transform={`rotate(${rot} 110 105)`}>
-        <ellipse cx="110" cy="146" rx="34" ry="6" fill="#000" opacity=".35" />
-        <path d="M78 62 L142 62 L133 142 L87 142 Z" fill="#e8f2f4" opacity=".16" stroke="#e6eef0" strokeWidth="3" strokeLinejoin="round" />
-        <path d="M82 92 L138 92 L133 140 L87 140 Z" fill="#cfe6ea" opacity=".55" />
-        <ellipse cx="110" cy="92" rx="28" ry="4" fill="#eef8fa" opacity=".8" />
-        <ellipse cx="110" cy="62" rx="32" ry="5" fill="none" stroke="#f3f8f9" strokeWidth="3" />
-        <path d="M89 70 L94 132" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".55" />
+      <g transform={`rotate(${rot} 110 100)`}>
+        <ellipse cx="110" cy="171" rx="30" ry="5" fill="#000" opacity=".35" />
+        <path
+          d="M102 40 L118 40 L118 64 Q135 74 136 92 L136 160 Q136 170 126 170 L94 170 Q84 170 84 160 L84 92 Q85 74 102 64 Z"
+          fill="#2f9a4f"
+          opacity=".92"
+        />
+        <path d="M90 96 Q91 82 104 72" stroke="#bff0c8" strokeWidth="4" fill="none" strokeLinecap="round" opacity=".6" />
+        <rect x="86" y="108" width="48" height="36" rx="3" fill="#f4f6f1" />
+        <rect x="86" y="108" width="48" height="5" fill="#2f9a4f" opacity=".5" />
+        <text x="110" y="134" textAnchor="middle" fontSize="13" fontWeight="900" fill="#1f6a35">
+          소주
+        </text>
+        <rect x="99" y="18" width="22" height="24" rx="3" fill="#d8262c" />
+        <path d="M103 20 V40 M108 20 V40 M113 20 V40 M118 20 V40" stroke="#a51a1f" strokeWidth="1.6" />
+        <rect x="97" y="38" width="26" height="5" rx="2" fill="#b81f24" />
+        <path d="M89 100 V158" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" opacity=".28" />
       </g>
     </svg>
   );
