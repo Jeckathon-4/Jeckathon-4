@@ -1,7 +1,8 @@
 'use client';
 // 원본 HTML(public/fan-demo.html)을 iframe으로 띄우고, Next 라우팅·Supabase와 메시지로 연결한다.
 // 메시지 규약은 docs/HANDOFF.md 참고.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { APP_BG, PHONE_BG } from './app-loading';
 import { useRouter } from 'next/navigation';
 import { actInRoom, endRoom, getRoom, isRoomId, joinRoom, restartRoom, subscribeRoom, type Room } from '@/lib/room';
 
@@ -20,6 +21,13 @@ const isScenario = (v: unknown): v is Scenario => v === 'win' || v === 'lose' ||
 
 export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?: string; screen?: Screen; team?: number; result?: Scenario }) {
   const frame = useRef<HTMLIFrameElement>(null);
+  const [shown, setShown] = useState(false);
+  // iframe이 하이드레이션 전에 이미 로드됐거나 onLoad를 놓쳐도 반드시 보이게
+  useEffect(() => {
+    if (frame.current?.contentDocument?.readyState === 'complete') setShown(true);
+    const t = setTimeout(() => setShown(true), 900);
+    return () => clearTimeout(t);
+  }, []);
   const router = useRouter();
   const inRoom = ROOM_SCREENS.includes(screen) && !!roomId;
 
@@ -120,12 +128,17 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
 
   const qs = new URLSearchParams({ screen, ...(roomId ? { room: roomId } : {}), ...(team !== undefined ? { team: String(team) } : {}), ...(result ? { result } : {}) });
   return (
-    <iframe
-      ref={frame}
-      title="비라도 와라 야구장"
-      allow="autoplay; clipboard-write"
-      src={`/fan-demo.html?${qs}`}
-      style={{ display: 'block', width: '100%', height: '100dvh', border: 0 }}
-    />
+    // 전환 깜빡임 방지: 앱 배경을 먼저 깔고, iframe은 로드 후 부드럽게 나타남
+    <div style={{ minHeight: '100dvh', background: APP_BG }}>
+      <div style={{ position: 'fixed', inset: 0, maxWidth: 480, margin: '0 auto', background: PHONE_BG }} />
+      <iframe
+        ref={frame}
+        title="하늘아 눈치 챙겨 야구장"
+        allow="autoplay; clipboard-write"
+        src={`/fan-demo.html?${qs}`}
+        onLoad={() => setShown(true)}
+        style={{ position: 'relative', display: 'block', width: '100%', height: '100dvh', border: 0, background: 'transparent', opacity: shown ? 1 : 0, transition: 'opacity .28s ease' }}
+      />
+    </div>
   );
 }

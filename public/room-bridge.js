@@ -13,7 +13,7 @@ const MATCHES = [
 const SCENARIOS = {
   win:  { label: '이긴 경기', title: '☀️ 4 : 2 · 이기는 날', lines: ['우리 팀이 리드 중. 해를 눌러 맑은 하늘을 지키세요.', '상대 팬은 비를 눌러 우천취소를 빌어요. 더 많이 누른 쪽으로 하늘이 바뀝니다.', '경기가 끝나면 승리 클럽. 댄서를 부르고 화면을 눌러 폭죽을 터뜨려요.'], mine: [1,0,2,0,0,1,0,0,0], opp: [0,1,0,0,1,0,0,0,0] }, // 4:2
   lose: { label: '진 경기', title: '💧 2 : 4 · 지는 날', lines: ['우리 팀이 끌려가는 중. 비를 눌러 우천취소를 비세요.', '비가 쌓일수록 하늘이 어두워지고 야구장이 잠겨요.', '경기가 끝나면 패배 추모관. 다 같이 국화를 헌화해요.'], mine: [0,1,0,0,1,0,0,0,0], opp: [1,0,2,0,0,1,0,0,0] }, // 2:4
-  draw: { label: '비긴 경기', title: '⛅ 3 : 3 · 애매한 날', lines: ['이기지도 지지도 않는 팽팽한 하늘. 비도 해도 마음대로 누르세요.', '같은 경기 팬끼리 비와 해가 줄다리기를 해요.', '경기가 끝나면 추모관. 이기지 못한 날이니 함께 헌화해요.'], mine: [0,2,0,0,0,1,0,0,0], opp: [0,0,0,3,0,0,0,0,0] }, // 3:3
+  draw: { label: '비긴 경기', title: '⛅ 3 : 3 · 애매한 날', lines: ['이기지도 지지도 않는 팽팽한 하늘. 비도 해도 마음대로 누르세요.', '같은 경기 팬끼리 비와 해가 줄다리기를 해요.', '경기가 끝나면 심야 대합실. 화면을 눌러 같이 한숨 쉬어요.'], mine: [0,2,0,0,0,1,0,0,0], opp: [0,0,0,3,0,0,0,0,0] }, // 3:3
 };
 const INNING_SEC = 20, PRAY_CLOSE_SEC = 100, GAME_END_SEC = 180, ACTION_GAP_MS = 250;
 const STEP_SCREEN = ['home', 'match', 'pray', 'result', 'memorial'];
@@ -156,6 +156,26 @@ bgmBtn.onclick = () => { bgmBtn.textContent = BGM.toggleMute() ? '🔇' : '🔊'
 document.querySelector('.header')?.insertBefore(bgmBtn, $('headerTag'));
 style.textContent += `.bgmToggle{margin-left:auto;margin-right:8px;background:none;border:0;font-size:15px;padding:4px;cursor:pointer}`;
 
+// ---- 첫 진입 스플래시: 로고가 떴다가 서서히 사라지며 팀 선택 화면 등장 (세션당 1회) ----
+(function splash() {
+  let seen = false;
+  try { seen = sessionStorage.getItem('sky-splash') === '1'; sessionStorage.setItem('sky-splash', '1'); } catch {}
+  if (screenParam !== 'home' || seen) return;
+  const el = document.createElement('div');
+  el.className = 'splash';
+  el.innerHTML = '<div class="splashMark">☁️</div><div class="splashName">하늘아<br><span>눈치 챙겨</span></div><div class="splashSub">야구 지는 날, 우리는 하늘에 빕니다</div>';
+  (document.getElementById('phoneInner') || document.body).appendChild(el);
+  setTimeout(() => el.classList.add('out'), 1500);
+  setTimeout(() => el.remove(), 2300);
+})();
+style.textContent += `.splash{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 38%,#24375a 0%,#111b2d 62%);color:#eef3fb;text-align:center;transition:opacity .8s ease,transform .8s ease}
+.splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.splashMark{font-size:64px;animation:splashIn .9s cubic-bezier(.2,.8,.2,1) both}
+.splashName{font-size:38px;font-weight:950;letter-spacing:-.05em;line-height:1.15;animation:splashIn .9s .15s cubic-bezier(.2,.8,.2,1) both}.splashName span{color:#ffce77}
+.splashSub{font-size:12px;color:#9fb3cf;animation:splashIn .9s .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes splashIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.view.active{animation:viewIn .32s ease both}@keyframes viewIn{from{opacity:0}to{opacity:1}}`;
+
 // ---- 초기 화면 ----
 const initialStep = STEP_SCREEN.indexOf(screenParam);
 if (inRoom && initialStep >= 3) { const sc = scoreAt(GAME_END_SEC); state.myScore = sc.my; state.oppScore = sc.opp; }
@@ -221,7 +241,6 @@ function applyRoom(r, restarted) {
 
   if (state.step === 3) {
     renderResult();
-    if (state.myScore === state.oppScore) $('resultButton').textContent = '추모관';
     $('resultButton').disabled = !sharedEnded;
     if (!sharedEnded) { $('resultTitle').textContent = '아직 끝나지 않았어요'; $('resultDesc').textContent = `${state.inning}회 진행 중 · 9회 종료 후 결과가 확정됩니다.`; }
   }

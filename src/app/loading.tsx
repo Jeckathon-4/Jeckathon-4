@@ -1,1 +1,4 @@
-export default function Loading(){return <p style={{padding:32,textAlign:'center'}}>경기장에 입장하고 있어요…</p>}
+import { AppLoading } from '@/components/app-loading';
+export default function Loading() {
+  return <AppLoading />;
+}

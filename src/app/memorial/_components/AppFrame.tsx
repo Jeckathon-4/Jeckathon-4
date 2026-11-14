@@ -21,7 +21,7 @@ export function AppFrame({
     <div className="memorialRoot">
       <header className="header">
         <Link className="logo" href="/">
-          비라도 <span>와라</span>
+          하늘아 <span>눈치 챙겨</span>
         </Link>
         <div className="badge">{tag}</div>
       </header>
@@ -32,7 +32,7 @@ export function AppFrame({
       ) : null}
       {children}
       <div className="footer">
-        <span>비라도 와라 · fan concept</span>
+        <span>하늘아 눈치 챙겨 · fan concept</span>
         <span>0{step} / 05</span>
       </div>
       <div className={`toast ${toast ? 'show' : ''}`} role="status">
