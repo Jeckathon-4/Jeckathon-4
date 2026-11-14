@@ -390,18 +390,13 @@ html,body{height:100%;background:#eef2ee}.wrapper{display:block;max-width:480px;
               <button class="orb sun" id="sunAction" onclick="addForce('sun')" aria-label="햇빛 모으기"><span class="orbIcon">☀️</span></button>
             </div>
             <div class="underActions"><span id="rainHint">비</span><span id="sunHint">해</span></div>
+            <button class="endGame" type="button" onclick="finishGame()">경기 종료</button>
           </div>
           <button class="chantToggle" onclick="toggleChant()" aria-label="한마디 남기기" title="한마디 남기기">✎</button>
           <form class="chantComposer hidden" id="chantComposer" onsubmit="saveChant(event)">
             <input id="chantInput" maxlength="42" placeholder="한마디 외치기" aria-label="경기 응원 한마디" autocomplete="off">
             <button type="submit" aria-label="멘트 설정">↵</button>
           </form>
-          <button class="demoToggle" onclick="toggleDemo()" aria-label="시연 설정" title="시연 설정">⚙</button>
-          <div class="demoDrawer hidden" id="demoDrawer">
-            <div class="demoTitle">시연 조작 <button onclick="toggleDemo()" aria-label="닫기">×</button></div>
-            <div class="demoButtons"><button onclick="changeScore('my',1)">내 팀 득점</button><button onclick="changeScore('opp',1)">상대 득점</button><button onclick="advanceInning()">다음 이닝</button></div>
-            <button class="demoFinish" onclick="finishGame()">경기 종료 →</button>
-          </div>
         </div>
       </section>
 

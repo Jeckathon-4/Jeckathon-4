@@ -28,6 +28,8 @@ let scenario = SCENARIOS[initial.get('result')] ? initial.get('result') : 'lose'
 // 개인 응원팀(URL에 유지) vs 화면 기준팀(경기 양 팀 중 하나)
 let fanTeam = Number.isInteger(teamParam) && teamParam >= 0 && teamParam < teams.length ? teamParam : (match ? match.a : 6);
 let connected = false, sharedEnded = false, sharedClosed = false, navigating = false, lastActionAt = 0;
+let manualEnd = !!(roomParam && sessionStorage.getItem(`fan-ended:${roomParam}`) === '1');
+if (manualEnd) sharedEnded = true;
 
 function tellParent(data) { parent.postMessage({ source: 'fan-demo', ...data }, location.origin); }
 function navigate(screen, room) {
@@ -62,7 +64,7 @@ window.copyInvite = async function (id) {
   try { await navigator.clipboard.writeText(url); toast('초대 링크를 복사했어요'); } catch { toast(url); }
 };
 const style = document.createElement('style');
-style.textContent = `.scenario{margin-bottom:4px;grid-template-columns:repeat(3,1fr)}.scenario .ghostBtn{padding:12px 6px;font-size:13px}.scenario .on{background:#f6d38b;color:#17202e;border-color:#f6d38b}.logo{cursor:pointer}.connectionNote{display:none;cursor:pointer}`;
+style.textContent = `.scenario{margin-bottom:4px;grid-template-columns:repeat(3,1fr)}.scenario .ghostBtn{padding:12px 6px;font-size:13px}.scenario .on{background:#f6d38b;color:#17202e;border-color:#f6d38b}.logo{cursor:pointer}.connectionNote{display:none;cursor:pointer}.minimalControls{bottom:128px}.endGame{pointer-events:auto;margin-top:12px;width:168px;border:0;border-radius:16px;padding:12px;background:#f2d08b;color:#172339;font-weight:900}`;
 document.head.appendChild(style);
 
 // ---- 이동: 모든 단계 전환은 URL 이동(새로고침·뒤로가기·직접 접속 대응) ----
@@ -106,12 +108,19 @@ addTribute = function (message = '') {
 };
 clearTributes = function () { toast('함께 놓은 꽃은 지울 수 없어요'); };
 changeScore = advanceInning = function () { toast('경기는 모두 같은 시계로 자동 진행돼요'); };
-finishGame = function () { if (!sharedEnded) { toast('아직 경기가 진행 중이에요'); return; } navigate('result'); };
+finishGame = function () {
+  if (!connected) { toast('경기장에 연결하는 중이에요'); return; }
+  if (roomParam) sessionStorage.setItem(`fan-ended:${roomParam}`, '1');
+  manualEnd = true; sharedEnded = true;
+  navigate('result');
+};
 randomOpponent = function () { toast('대진은 경기 목록에서 골라요'); };
 // 추모관 '초기화' → 같은 경기 룸에서 새 경기 시작 (종료 후에만 DB가 허용)
 resetDemo = function () {
   if (!sharedEnded) { toast('경기가 끝난 뒤 새 경기를 시작할 수 있어요'); return; }
   if (navigating) return; navigating = true; setTimeout(() => (navigating = false), 2000);
+  manualEnd = false; sharedEnded = false;
+  if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`);
   tellParent({ type: 'restart' });
 };
 document.querySelectorAll('#v4 .ghostBtn').forEach((b) => { if (b.textContent.trim() === '초기화') b.textContent = '새 경기'; });
@@ -155,8 +164,13 @@ function applyRoom(r, restarted) {
   lastRoomState = r;
   connected = true; note('');
   const elapsed = Math.max(0, (Date.now() - Date.parse(r.started_at)) / 1000);
-  sharedClosed = elapsed >= PRAY_CLOSE_SEC; sharedEnded = elapsed >= GAME_END_SEC;
-  if (restarted) { toast('이 경기장에서 새 경기가 시작됐어요'); if (state.step >= 3) { navigate('pray'); return; } }
+  sharedClosed = elapsed >= PRAY_CLOSE_SEC; sharedEnded = elapsed >= GAME_END_SEC || manualEnd;
+  if (restarted) {
+    manualEnd = false; sharedEnded = elapsed >= GAME_END_SEC;
+    if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`);
+    toast('이 경기장에서 새 경기가 시작됐어요');
+    if (state.step >= 3) { navigate('pray'); return; }
+  }
 
   state.tears = r.rain; state.suns = r.sun;
   state.inning = Math.min(9, Math.floor(elapsed / INNING_SEC) + 1); state.half = '말';
@@ -166,7 +180,6 @@ function applyRoom(r, restarted) {
   $('rainAction').disabled = sharedClosed; $('sunAction').disabled = sharedClosed;
   document.querySelector('.chantToggle').disabled = sharedClosed;
   if (sharedClosed) $('chantComposer').classList.add('hidden');
-  if (sharedClosed) $('roleText').textContent = sharedEnded ? '경기 종료 · 오늘도 함께였어요' : '5회 성립 · 이제 비가 와도 집니다';
   $('inningTag').textContent = sharedEnded ? '경기 종료' : `${state.inning}회 말 · LIVE`;
 
   state.tributes = Array.from({ length: Math.min(r.flowers, 300) }, (_, i) => ({ x: 8 + ((i * .61803398875) % 1) * 77, y: Math.min(78, 10 + Math.floor(i / 9) * 11 + (i * 7) % 15), size: .68 + (i % 9) * .05, rotation: -53 + (i * 29) % 107, seed: i * 7.31, message: '' }));
