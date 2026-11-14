@@ -32,7 +32,8 @@
   .sceneBase{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 65%,#151719 0%,#090a0b 60%,#050607 100%)}
   .sceneLabel{position:absolute;left:50%;transform:translateX(-50%);top:70px;z-index:2;text-align:center;opacity:.78;pointer-events:none}.sceneLabel .emoji{font-size:19px}.sceneLabel .line1{font-size:13px;font-weight:900;margin-top:8px}
   .flowerField{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none}
-  .tribute{position:absolute;width:clamp(110px,35%,175px);height:auto;aspect-ratio:1/1.5;display:block;transform-origin:47% 82%;filter:drop-shadow(0 6px 7px rgba(0,0,0,.28));animation:flowerFall .52s cubic-bezier(.17,.8,.26,1.08) both}
+  .tribute{position:absolute;width:clamp(64px,17%,88px);height:auto;aspect-ratio:1/1.5;display:block;transform-origin:47% 82%;filter:drop-shadow(0 6px 7px rgba(0,0,0,.28))}
+  .tribute.fresh{animation:flowerDrop .75s cubic-bezier(.45,0,.75,1) both}
   .tribute svg{width:100%;height:100%;display:block;overflow:visible}
   
 
@@ -41,9 +42,9 @@
   .endingMini .box{flex:0 0 auto;background:rgba(7,9,12,.56);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:5px 12px;backdrop-filter:blur(5px)}
   .endingMini .value{font-size:12px;font-weight:700}
   .miniBtns{display:flex;justify-content:center;gap:12px;pointer-events:none}
-  .tributeBtn{margin:0;width:74px;height:74px;border-radius:50%;padding:0;border:1px solid rgba(255,255,255,.25);background:radial-gradient(circle at 35% 25%,#e8e8e1,#b5b8b2);color:#1a2020;font-size:12px;font-weight:900;box-shadow:0 8px 30px #0008;pointer-events:auto}
+  .tributeBtn{margin:0;width:74px;height:74px;border-radius:50%;padding:0;border:1px solid rgba(255,255,255,.25);background:radial-gradient(circle at 35% 25%,#e8e8e1,#b5b8b2);color:#1a2020;font-size:36px;font-weight:900;line-height:1;box-shadow:0 8px 30px #0008;pointer-events:auto}
   .tributeBtn:active{transform:scale(.92)}
-  .clearBtn{width:45px;height:45px;border-radius:50%;padding:0;align-self:center;background:#24272caa;color:#eef4fb;font-size:11px;font-weight:900;border:1px solid #42546f;pointer-events:auto}
+  .clearBtn{width:45px;height:45px;border-radius:50%;padding:0;align-self:center;background:#24272caa;color:#eef4fb;font-size:20px;font-weight:900;border:1px solid #42546f;pointer-events:auto}
 
   .memorialMessages{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
   .memoryNote{position:absolute;left:var(--x,45%);top:var(--y,40%);max-width:72%;padding:7px 11px;border-radius:15px;background:rgba(16,20,27,.79);border:1px solid #ffffff33;color:#f2f0e9;font-size:11px;font-weight:700;line-height:1.4;overflow-wrap:anywhere;box-shadow:0 4px 15px #0006;transform:rotate(var(--a,-5deg));pointer-events:none;animation:memorialWhisper 3.25s ease-out forwards}
@@ -96,7 +97,7 @@
   .clubFirework{position:absolute;left:var(--x);top:var(--y);width:0;height:0;z-index:9;pointer-events:none}
   .clubSpark{position:absolute;left:0;top:0;width:7px;height:16px;border-radius:5px;background:var(--c);box-shadow:0 0 12px var(--c),0 0 26px var(--c);animation:clubBurst .83s cubic-bezier(.16,.64,.25,1) forwards;transform-origin:center}
   
-  .endingScreen.isWin .tributeBtn{background:radial-gradient(circle at 30% 20%,#ff9ae9,#a14ff7);color:white;border:1px solid #ffffffbb;box-shadow:0 0 25px #e338df88;font-size:30px}
+  .endingScreen.isWin .tributeBtn{background:radial-gradient(circle at 30% 20%,#ff9ae9,#a14ff7);color:white;border:1px solid #ffffffbb;box-shadow:0 0 25px #e338df88;font-size:36px}
   .endingScreen.isWin .endingMini .box{background:#19083bb3}
   .endingScreen.isWin .endingChip,.endingScreen.isWin .endingScore{background:rgba(25,58,92,.42)}
   .endingScreen.isWin .tributeComposer{background:#160b37c7;border-color:#ff6de66b}
@@ -114,7 +115,7 @@
 
 /* keyframes (중첩 블록 밖에 있어야 함) */
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-@keyframes flowerFall{from{opacity:0;translate:0 -65px;scale:1.13}65%{opacity:1}to{opacity:1;translate:0 0;scale:1}}
+@keyframes flowerDrop{0%{translate:0 -110vh}78%{translate:0 0}88%{translate:0 -10px}100%{translate:0 0}}
 @keyframes memorialWhisper{0%{opacity:0;translate:0 15px;scale:.9}13%{opacity:1;translate:0 0;scale:1}72%{opacity:1}100%{opacity:0;translate:0 -42px;scale:.98}}
 @keyframes momentFade{0%{opacity:0;scale:.8}12%{opacity:1;scale:1}76%{opacity:1}100%{opacity:0;scale:1.06}}
 @keyframes emberGlow{from{opacity:.35;filter:drop-shadow(0 0 2px #ff9d40)}to{opacity:1;filter:drop-shadow(0 0 10px #ff6d19)}}
@@ -178,7 +179,7 @@
   .waitingSigh:after{content:'◌';position:absolute;left:-24px;top:8px;color:#bcd2e5;filter:blur(3px);font-size:24px}
   .waitingHint{position:absolute;top:45%;left:0;right:0;text-align:center;font-size:11px;color:#d4dee5;opacity:.8;pointer-events:none;z-index:5}
   .endingScreen.isDraw .endingChip,.endingScreen.isDraw .endingScore{background:#111d2cc4}
-  .endingScreen.isDraw .tributeBtn{background:linear-gradient(135deg,#c8d5d9,#7f99a9);color:#16232d;box-shadow:0 7px 22px #0009;border:1px solid #cfdee9;font-size:27px}
+  .endingScreen.isDraw .tributeBtn{background:linear-gradient(135deg,#c8d5d9,#7f99a9);color:#16232d;box-shadow:0 7px 22px #0009;border:1px solid #cfdee9;font-size:36px}
   .endingScreen.isDraw .endingMini .box,.endingScreen.isDraw .tributeComposer{background:#101f2bd9}
   .endingScreen.isDraw .tributeComposer button{background:#bdcfd9;color:#203340}
   @media (prefers-reduced-motion: reduce) { .waitingLamp,.waitingPerson .personPose{animation:none} }

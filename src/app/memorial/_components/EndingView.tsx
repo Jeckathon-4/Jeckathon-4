@@ -24,7 +24,7 @@ import {
 } from './scene';
 
 type Note = { id: number; text: string; style: CSSProperties };
-type Spot = { id: number; x: number; y: number; text?: string; sparks?: number[] };
+type Spot = { id: number; x: number; y: number; text?: string; sparks?: number[]; kind?: 'cig' | 'glass'; rot?: number };
 
 const MAX_FLOWERS = 300;
 const MAX_FIGURES = 120;
@@ -44,7 +44,7 @@ export function EndingView({
   opp?: number;
 }) {
   const router = useRouter();
-  const { room, setRoom, error, elapsed } = useRoom(roomId);
+  const { room, setRoom, error, elapsed, initialFlowers } = useRoom(roomId);
   const toast = useToast();
   const { myScore, oppScore } = scoresFor(result, my, opp);
   const sides = matchSides(roomId, team);
@@ -126,9 +126,12 @@ export function EndingView({
     const py = e.clientY - rect.top;
     const id = nextId.current++;
     if (mood === 'loss') {
-      const x = Math.max(116, Math.min(rect.width - 116, px));
-      const y = Math.max(205, Math.min(rect.height - 180, py));
-      pushTemp(setSpots, { id, x, y }, 4300);
+      // 담배 또는 술잔을 랜덤으로. 담배는 360도 아무 방향으로나 놓인다
+      const x = Math.max(90, Math.min(rect.width - 90, px));
+      const y = Math.max(150, Math.min(rect.height - 180, py));
+      const kind = Math.random() < 0.5 ? 'cig' : 'glass';
+      const rot = kind === 'cig' ? Math.random() * 360 : -15 + Math.random() * 30;
+      pushTemp(setSpots, { id, x, y, kind, rot }, 4300);
     } else if (mood === 'win') {
       const x = Math.max(35, Math.min(rect.width - 35, px));
       const y = Math.max(75, Math.min(rect.height - 130, py));
@@ -171,8 +174,8 @@ export function EndingView({
                   return (
                     <div
                       key={i}
-                      className="tribute"
-                      style={{ left: `${f.x}%`, bottom: `${f.y}%`, rotate: `${f.rotation}deg`, scale: f.size, zIndex: i + 1 }}
+                      className={`tribute ${initialFlowers !== null && i >= initialFlowers ? 'fresh' : ''}`}
+                      style={{ left: `${f.x}%`, bottom: `${f.y}%`, rotate: `${f.rotation}deg`, scale: f.size, zIndex: f.z }}
                     >
                       <Chrysanthemum seed={f.seed} />
                     </div>
@@ -270,26 +273,12 @@ export function EndingView({
                 </div>
               ))}
             </div>
-            <div className="sceneTapHint">화면을 탭하면 함께 불을 붙입니다</div>
+            <div className="sceneTapHint">화면을 탭하면 함께 한 대, 한 잔</div>
             <div className="cigaretteMoments" aria-hidden="true">
               {mood === 'loss' &&
                 spots.map((s) => (
                   <div key={s.id} className="cigaretteMoment" style={{ left: s.x, top: s.y }}>
-                    <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <g transform="rotate(-33 110 115)">
-                        <rect x="39" y="105" width="143" height="15" rx="5" fill="#e9eceb" />
-                        <rect x="39" y="105" width="37" height="15" rx="3" fill="#c99461" />
-                        <rect x="175" y="105" width="8" height="15" rx="2" fill="#ff8242" className="ember" />
-                        <path
-                          d="M178 103 Q165 80 181 64 Q192 46 176 24"
-                          fill="none"
-                          stroke="#d3d7da"
-                          strokeWidth="4"
-                          strokeLinecap="round"
-                          className="smoke"
-                        />
-                      </g>
-                    </svg>
+                    {s.kind === 'glass' ? <SojuGlass rot={s.rot ?? 0} /> : <Cigarette rot={s.rot ?? 0} />}
                   </div>
                 ))}
             </div>
@@ -336,5 +325,45 @@ export function EndingView({
         </div>
       </section>
     </AppFrame>
+  );
+}
+
+/** 담배: 몸통은 rot만큼 회전, 연기는 불씨 위치에서 항상 위로 피어오른다 */
+function Cigarette({ rot }: { rot: number }) {
+  const rad = (rot * Math.PI) / 180;
+  const ex = 110 + 69 * Math.cos(rad);
+  const ey = 90 + 69 * Math.sin(rad);
+  return (
+    <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g transform={`rotate(${rot} 110 90)`}>
+        <rect x="39" y="83" width="143" height="15" rx="5" fill="#e9eceb" />
+        <rect x="39" y="83" width="37" height="15" rx="3" fill="#c99461" />
+        <rect x="175" y="83" width="8" height="15" rx="2" fill="#ff8242" className="ember" />
+      </g>
+      <path
+        d={`M${ex} ${ey - 4} q-13 -23 3 -39 q11 -18 -5 -40`}
+        fill="none"
+        stroke="#d3d7da"
+        strokeWidth="4"
+        strokeLinecap="round"
+        className="smoke"
+      />
+    </svg>
+  );
+}
+
+/** 술잔(소주잔): 투명한 잔에 술이 담긴 모습 */
+function SojuGlass({ rot }: { rot: number }) {
+  return (
+    <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g transform={`rotate(${rot} 110 105)`}>
+        <ellipse cx="110" cy="146" rx="34" ry="6" fill="#000" opacity=".35" />
+        <path d="M78 62 L142 62 L133 142 L87 142 Z" fill="#e8f2f4" opacity=".16" stroke="#e6eef0" strokeWidth="3" strokeLinejoin="round" />
+        <path d="M82 92 L138 92 L133 140 L87 140 Z" fill="#cfe6ea" opacity=".55" />
+        <ellipse cx="110" cy="92" rx="28" ry="4" fill="#eef8fa" opacity=".8" />
+        <ellipse cx="110" cy="62" rx="32" ry="5" fill="none" stroke="#f3f8f9" strokeWidth="3" />
+        <path d="M89 70 L94 132" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".55" />
+      </g>
+    </svg>
   );
 }

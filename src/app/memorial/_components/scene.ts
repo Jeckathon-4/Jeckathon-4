@@ -43,13 +43,22 @@ export function moodOf(myScore: number, oppScore: number): Mood {
 }
 
 /** 공유된 헌화 수로 꽃 배치를 결정적으로 만든다 (모든 기기에서 같은 모양) */
+/** 차분하게 정렬된 헌화 배치: 5송이씩 줄을 맞춰 아래부터 쌓고(엇갈린 벽돌 배열), 7줄이 차면 조금 옮겨 다음 층 */
+const COLS = 5;
+const ROWS = 7;
 export function tributeLayout(i: number) {
+  const layer = Math.floor(i / (COLS * ROWS));
+  const j = i % (COLS * ROWS);
+  const row = Math.floor(j / COLS);
+  const col = j % COLS;
   return {
-    x: 8 + ((i * 0.61803398875) % 1) * 77,
-    y: Math.min(78, 10 + Math.floor(i / 9) * 11 + ((i * 7) % 15)),
-    size: 0.68 + (i % 9) * 0.05,
-    rotation: -53 + ((i * 29) % 107),
+    x: 6 + col * 15 + (row % 2) * 7.5 + (layer % 3) * 3,
+    y: 30 + row * 6.5 + (layer % 3) * 2,
+    size: 1,
+    rotation: -12,
     seed: i * 7.31,
+    // 아래 줄이 앞에 보이도록
+    z: layer * 100 + (ROWS - row) * 10 + col,
   };
 }
 

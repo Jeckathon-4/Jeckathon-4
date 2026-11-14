@@ -9,6 +9,8 @@ import { getRoom, joinRoom, subscribeRoom, type Room } from '@/lib/room';
 export function useRoom(roomId: string) {
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState('');
+  /** 처음 불러왔을 때의 헌화 수. 이보다 뒤에 놓인 꽃만 떨어지는 애니메이션 */
+  const [initialFlowers, setInitialFlowers] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -18,6 +20,7 @@ export function useRoom(roomId: string) {
         const r = (await getRoom(roomId)) ?? (await joinRoom(roomId));
         if (!alive) return;
         setRoom(r);
+        setInitialFlowers((v) => v ?? r.flowers);
         setError('');
       } catch (e) {
         if (alive) setError((e as Error).message);
@@ -36,5 +39,5 @@ export function useRoom(roomId: string) {
   }, [roomId]);
 
   const elapsed = room ? Math.max(0, (now - Date.parse(room.started_at)) / 1000) : 0;
-  return { room, setRoom, error, elapsed };
+  return { room, setRoom, error, elapsed, initialFlowers };
 }
