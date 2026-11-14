@@ -3,7 +3,7 @@
 // 메시지 규약은 docs/HANDOFF.md 참고.
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { actInRoom, getRoom, isRoomId, joinRoom, restartRoom, subscribeRoom, type Room } from '@/lib/room';
+import { actInRoom, endRoom, getRoom, isRoomId, joinRoom, restartRoom, subscribeRoom, type Room } from '@/lib/room';
 
 export type Screen = 'home' | 'match' | 'pray' | 'result' | 'memorial';
 const ROOM_SCREENS: Screen[] = ['pray', 'result', 'memorial'];
@@ -25,6 +25,7 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
 
   useEffect(() => {
     let alive = true;
+    const win = frame.current?.contentWindow;
     let lastStart = '';
     let lastRoom: Room | null = null;
     let refreshTimer: ReturnType<typeof setTimeout> | undefined;
@@ -85,6 +86,13 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
           fail(err);
         }
       }
+      if (m.type === 'end' && inRoom) {
+        try {
+          push(await endRoom(roomId!));
+        } catch (err) {
+          fail(err);
+        }
+      }
       if (m.type === 'restart' && inRoom) {
         try {
           const room = await restartRoom(roomId!);
@@ -99,7 +107,9 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
     const unsubscribe = inRoom ? subscribeRoom(roomId!, push) : () => {};
     const timer = inRoom ? setInterval(refresh, 3000) : undefined;
     if (inRoom) void enter();
+    send({ type: 'resume' });
     return () => {
+      win?.postMessage({ source: 'fan-host', type: 'pause' }, location.origin);
       alive = false;
       window.removeEventListener('message', receive);
       unsubscribe();
@@ -113,6 +123,7 @@ export function RoomScreen({ roomId, screen = 'home', team, result }: { roomId?:
     <iframe
       ref={frame}
       title="비라도 와라 야구장"
+      allow="autoplay; clipboard-write"
       src={`/fan-demo.html?${qs}`}
       style={{ display: 'block', width: '100%', height: '100dvh', border: 0 }}
     />

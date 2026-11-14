@@ -28,3 +28,17 @@ revoke all on function public.join_fan_room(text) from public;
 revoke all on function public.restart_fan_room(text) from public;
 grant execute on function public.join_fan_room(text), public.restart_fan_room(text) to anon, authenticated;
 notify pgrst, 'reload schema';
+
+-- 시연용 '경기 종료' 버튼: 진행 중인 경기를 룸 전체에서 즉시 종료(시계를 180초 지점으로). 이미 끝났으면 그대로.
+create or replace function public.end_fan_room(room_id text) returns public.fan_rooms
+language plpgsql security definer set search_path = public as $$
+declare r public.fan_rooms;
+begin
+ update public.fan_rooms set started_at = now() - interval '180 seconds'
+  where id=room_id and now() < started_at + interval '180 seconds';
+ select * into r from public.fan_rooms where id=room_id;
+ return r;
+end; $$;
+revoke all on function public.end_fan_room(text) from public;
+grant execute on function public.end_fan_room(text) to anon, authenticated;
+notify pgrst, 'reload schema';

@@ -13,7 +13,7 @@ const MATCHES = [
 const SCENARIOS = {
   win:  { label: '이긴 경기', title: '☀️ 4 : 2 · 이기는 날', lines: ['우리 팀이 리드 중. 해를 눌러 맑은 하늘을 지키세요.', '상대 팬은 비를 눌러 우천취소를 빌어요. 더 많이 누른 쪽으로 하늘이 바뀝니다.', '경기가 끝나면 승리 클럽. 댄서를 부르고 화면을 눌러 폭죽을 터뜨려요.'], mine: [1,0,2,0,0,1,0,0,0], opp: [0,1,0,0,1,0,0,0,0] }, // 4:2
   lose: { label: '진 경기', title: '💧 2 : 4 · 지는 날', lines: ['우리 팀이 끌려가는 중. 비를 눌러 우천취소를 비세요.', '비가 쌓일수록 하늘이 어두워지고 야구장이 잠겨요.', '경기가 끝나면 패배 추모관. 다 같이 국화를 헌화해요.'], mine: [0,1,0,0,1,0,0,0,0], opp: [1,0,2,0,0,1,0,0,0] }, // 2:4
-  draw: { label: '비긴 경기', title: '⛅ 3 : 3 · 애매한 날', lines: ['이기지도 지지도 않는 팽팽한 하늘. 비도 해도 마음대로 누르세요.', '같은 경기 팬끼리 비와 해가 줄다리기를 해요.', '경기가 끝나면 막차 승강장. 화면을 눌러 같이 한숨 쉬어요.'], mine: [0,2,0,0,0,1,0,0,0], opp: [0,0,0,3,0,0,0,0,0] }, // 3:3
+  draw: { label: '비긴 경기', title: '⛅ 3 : 3 · 애매한 날', lines: ['이기지도 지지도 않는 팽팽한 하늘. 비도 해도 마음대로 누르세요.', '같은 경기 팬끼리 비와 해가 줄다리기를 해요.', '경기가 끝나면 추모관. 이기지 못한 날이니 함께 헌화해요.'], mine: [0,2,0,0,0,1,0,0,0], opp: [0,0,0,3,0,0,0,0,0] }, // 3:3
 };
 const INNING_SEC = 20, PRAY_CLOSE_SEC = 100, GAME_END_SEC = 180, ACTION_GAP_MS = 250;
 const STEP_SCREEN = ['home', 'match', 'pray', 'result', 'memorial'];
@@ -28,12 +28,13 @@ let scenario = SCENARIOS[initial.get('result')] ? initial.get('result') : 'lose'
 // 개인 응원팀(URL에 유지) vs 화면 기준팀(경기 양 팀 중 하나)
 let fanTeam = Number.isInteger(teamParam) && teamParam >= 0 && teamParam < teams.length ? teamParam : (match ? match.a : 6);
 let connected = false, sharedEnded = false, sharedClosed = false, navigating = false, lastActionAt = 0;
-let manualEnd = !!(roomParam && sessionStorage.getItem(`fan-ended:${roomParam}`) === '1');
-if (manualEnd) sharedEnded = true;
+// '경기 종료' 버튼은 룸 전체 종료(end_fan_room). 로컬 종료 상태는 쓰지 않음
+const manualEnd = false;
+try { if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`); } catch {}
 
 function tellParent(data) { parent.postMessage({ source: 'fan-demo', ...data }, location.origin); }
 function navigate(screen, room) {
-  if (navigating) return;
+  if (navigating || (typeof paused !== 'undefined' && paused)) return;
   navigating = true; setTimeout(() => (navigating = false), 1500);
   tellParent({ type: 'navigate', screen, room: room ?? roomParam, team: fanTeam, result: scenario });
 }
@@ -48,6 +49,17 @@ if (match) {
 } else {
   state.myTeam = fanTeam; state.oppTeam = fanTeam === 1 ? 6 : 1;
 }
+// ---- 구단 엠블럼 (출처: KBO 공식 사이트 엠블럼 이미지, public/logos) ----
+const LOGO_CODES = ['LG', 'HH', 'SK', 'SS', 'NC', 'KT', 'LT', 'HT', 'OB', 'WO'];
+const logoImg = (i, h) => `<img src="/logos/${LOGO_CODES[i]}.png" alt="${teams[i].name}" style="height:${h}px;width:auto;display:inline-block;vertical-align:middle">`;
+const baseRenderTeamGrid = renderTeamGrid;
+renderTeamGrid = function () { baseRenderTeamGrid(); document.querySelectorAll('#teamGrid .teamBtn .icon').forEach((el, i) => { el.innerHTML = logoImg(i, 30); }); };
+const baseSyncTeams = syncTeams;
+syncTeams = function () {
+  baseSyncTeams();
+  $('myIcon').innerHTML = logoImg(state.myTeam, 44); $('oppIcon').innerHTML = logoImg(state.oppTeam, 44);
+  $('sbMyIcon').innerHTML = logoImg(state.myTeam, 26); $('sbOppIcon').innerHTML = logoImg(state.oppTeam, 26);
+};
 syncTeams(); renderTeamGrid();
 const baseSelectTeam = selectTeam;
 selectTeam = function (i) { baseSelectTeam(i); fanTeam = i; };
@@ -115,23 +127,38 @@ clearTributes = function () { toast('함께 놓은 꽃은 지울 수 없어요')
 changeScore = advanceInning = function () { toast('경기는 모두 같은 시계로 자동 진행돼요'); };
 finishGame = function () {
   if (!connected) { toast('경기장에 연결하는 중이에요'); return; }
-  if (roomParam) sessionStorage.setItem(`fan-ended:${roomParam}`, '1');
-  manualEnd = true; sharedEnded = true;
-  navigate('result');
+  if (sharedEnded) { navigate('result'); return; }
+  if (navigating) return;
+  toast('경기를 종료합니다'); tellParent({ type: 'end' });
 };
 randomOpponent = function () { toast('대진은 경기 목록에서 골라요'); };
 // 추모관 '초기화' → 같은 경기 룸에서 새 경기 시작 (종료 후에만 DB가 허용)
 resetDemo = function () {
   if (!sharedEnded) { toast('경기가 끝난 뒤 새 경기를 시작할 수 있어요'); return; }
   if (navigating) return; navigating = true; setTimeout(() => (navigating = false), 2000);
-  manualEnd = false; sharedEnded = false;
-  if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`);
+  sharedEnded = false;
   tellParent({ type: 'restart' });
 };
 document.querySelectorAll('#v4 .ghostBtn').forEach((b) => { if (b.textContent.trim() === '초기화') b.textContent = '새 경기'; });
 
+// ---- BGM: 기도관 = 긴장, 끝난 뒤 결과·추모관 = 시나리오별(패배 오르간 / 승리 클럽 / 무승부 막차) ----
+let paused = false;
+function updateBgm() {
+  if (!window.BGM) return;
+  if (paused) { BGM.play(null); return; }
+  const end = { lose: 'loss', win: 'win', draw: 'draw' }[scenario];
+  BGM.play(state.step === 2 ? 'pray' : state.step >= 3 ? (sharedEnded ? end : 'pray') : null);
+}
+const bgmBtn = document.createElement('button');
+bgmBtn.className = 'bgmToggle'; bgmBtn.setAttribute('aria-label', '배경음악 켜기/끄기');
+bgmBtn.textContent = window.BGM?.muted ? '🔇' : '🔊';
+bgmBtn.onclick = () => { bgmBtn.textContent = BGM.toggleMute() ? '🔇' : '🔊'; };
+document.querySelector('.header')?.insertBefore(bgmBtn, $('headerTag'));
+style.textContent += `.bgmToggle{margin-left:auto;margin-right:8px;background:none;border:0;font-size:15px;padding:4px;cursor:pointer}`;
+
 // ---- 초기 화면 ----
 const initialStep = STEP_SCREEN.indexOf(screenParam);
+if (inRoom && initialStep >= 3) { const sc = scoreAt(GAME_END_SEC); state.myScore = sc.my; state.oppScore = sc.opp; }
 baseGo(initialStep);
 if (initialStep === 1) {
   const m = matchOf(fanTeam);
@@ -154,13 +181,15 @@ $('connectionNote').addEventListener('click', () => { if (inRoom) { note('다시
 window.addEventListener('message', (event) => {
   if (event.origin !== location.origin || event.source !== parent || event.data?.source !== 'fan-host') return;
   const m = event.data;
+  if (m.type === 'pause') { paused = true; updateBgm(); return; }
+  if (m.type === 'resume') { paused = false; updateBgm(); return; }
   if (m.type === 'error') { connected = false; note(`${m.message} (눌러서 다시 시도)`); return; }
   if (m.type !== 'state' || !m.room) return;
   applyRoom(m.room, m.restarted);
 });
 let lastRoomState = null;
 setInterval(() => {
-  if (!lastRoomState) return;
+  if (!lastRoomState || paused) return;
   const e = (Date.now() - Date.parse(lastRoomState.started_at)) / 1000;
   const inning = Math.min(9, Math.floor(e / INNING_SEC) + 1);
   if (e >= PRAY_CLOSE_SEC !== sharedClosed || e >= GAME_END_SEC !== sharedEnded || (state.step === 2 && inning !== state.inning)) applyRoom(lastRoomState, false);
@@ -171,8 +200,7 @@ function applyRoom(r, restarted) {
   const elapsed = Math.max(0, (Date.now() - Date.parse(r.started_at)) / 1000);
   sharedClosed = elapsed >= PRAY_CLOSE_SEC; sharedEnded = elapsed >= GAME_END_SEC || manualEnd;
   if (restarted) {
-    manualEnd = false; sharedEnded = elapsed >= GAME_END_SEC;
-    if (roomParam) sessionStorage.removeItem(`fan-ended:${roomParam}`);
+    sharedEnded = elapsed >= GAME_END_SEC;
     toast('이 경기장에서 새 경기가 시작됐어요');
     if (state.step >= 3) { navigate('pray'); return; }
   }
@@ -193,10 +221,13 @@ function applyRoom(r, restarted) {
 
   if (state.step === 3) {
     renderResult();
+    if (state.myScore === state.oppScore) $('resultButton').textContent = '추모관';
     $('resultButton').disabled = !sharedEnded;
     if (!sharedEnded) { $('resultTitle').textContent = '아직 끝나지 않았어요'; $('resultDesc').textContent = `${state.inning}회 진행 중 · 9회 종료 후 결과가 확정됩니다.`; }
   }
   if (state.step === 4) { if (!sharedEnded) { navigate('result'); return; } renderEnding(); }
+  updateBgm();
   if (sharedEnded && state.step === 2) navigate('result');
 }
+updateBgm();
 tellParent({ type: 'ready' });
