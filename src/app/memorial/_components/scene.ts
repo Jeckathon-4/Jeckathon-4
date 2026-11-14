@@ -50,21 +50,37 @@ function rand(i: number, salt: number) {
 }
 
 /**
- * 헌화 배치: 좌우 가장자리부터 번갈아 쌓인다. 왼쪽은 아래 안쪽 → 위 바깥쪽 대각선,
- * 오른쪽은 그 반대 대각선(V자). 한 줄(8송이)이 차면 다음 층은 조금씩 안쪽으로.
- * 너무 반듯하지 않게 위치·각도에 작은 흔들림을 준다.
+ * 헌화 배치: 왼쪽·오른쪽 영역에 번갈아 놓는다. 각 영역은 격자 자리를
+ * 가운데(안쪽)에서 바깥쪽으로, 순서는 랜덤하게 섞어 채운다. 다 차면 살짝 비켜 다음 층.
+ * 위치·각도·크기에 작은 흔들림을 줘서 너무 반듯하지 않게 한다. (결정적 난수라 모든 기기에서 같은 모양)
  */
-const PER_LINE = 8;
+function buildSide(): { x: number; y: number; layer: number }[] {
+  const cells: { x: number; y: number; key: number }[] = [];
+  let n = 0;
+  for (let gx = 0; gx < 5; gx++) {
+    for (let gy = 0; gy < 6; gy++) {
+      const x = 24 - gx * 7.5; // 24(안쪽) → -6(바깥 가장자리)
+      const y = 30 + gy * 6.5;
+      // 안쪽일수록 먼저, 같은 거리 안에서는 랜덤
+      cells.push({ x, y, key: gx + rand(n++, 9) * 1.6 });
+    }
+  }
+  cells.sort((a, b) => a.key - b.key);
+  const out: { x: number; y: number; layer: number }[] = [];
+  for (let layer = 0; layer < 5; layer++) {
+    for (const c of cells) out.push({ x: c.x + (layer % 2) * 3.5, y: c.y + layer * 1.2 + (layer % 2) * 3, layer });
+  }
+  return out;
+}
+const SIDE = buildSide();
+
 export function tributeLayout(i: number) {
   const left = i % 2 === 0;
-  const k = Math.floor(i / 2);
-  const layer = Math.floor(k / PER_LINE);
-  const t = (k % PER_LINE) / (PER_LINE - 1);
-  const inward = Math.min(layer, 4) * 6;
+  const p = SIDE[Math.floor(i / 2) % SIDE.length];
   const jx = (rand(i, 1) - 0.5) * 5;
   const jy = (rand(i, 2) - 0.5) * 4;
-  const x = left ? 22 - t * 22 + inward + jx : 64 + t * 20 - inward + jx;
-  const y = 30 + t * 32 + Math.min(layer, 4) * 1.5 + jy;
+  const x = (left ? p.x : 86 - p.x) + jx;
+  const y = p.y + jy;
   return {
     x,
     y,
@@ -73,7 +89,7 @@ export function tributeLayout(i: number) {
     flip: left,
     seed: i * 7.31,
     // 아래쪽 꽃이 앞에 보이도록
-    z: 1000 - Math.round(y * 10) + layer,
+    z: 1000 - Math.round(y * 10) + p.layer,
   };
 }
 

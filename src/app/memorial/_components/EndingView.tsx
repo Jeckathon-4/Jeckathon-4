@@ -307,11 +307,6 @@ export function EndingView({
               <button type="button" className="tributeBtn" aria-label={copy.label} onClick={() => void addTribute('')}>
                 {copy.button}
               </button>
-              {mood !== 'win' && (
-                <button type="button" className="clearBtn" onClick={() => toast.show('함께 놓은 꽃은 지울 수 없어요')}>
-                  ↺
-                </button>
-              )}
             </div>
             <form className="tributeComposer" onSubmit={onSubmit}>
               <input
