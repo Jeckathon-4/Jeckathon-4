@@ -247,6 +247,9 @@ function applyRoom(r, restarted) {
   // 결과 화면인데 경기가 진행 중 = 누군가 새 경기를 시작함 → 같이 기도관으로
   if (state.step === 3 && !sharedEnded) { navigate('pray'); return; }
   if (state.step === 3) {
+    // 끝난 경기의 기도관은 다시 결과로 돌아오므로, 결과 화면의 뒤로 버튼은 처음(팀 선택)으로
+    const back = document.querySelector('#v3 .back');
+    if (back && sharedEnded) { back.textContent = '← 처음으로'; back.onclick = () => navigate('home'); }
     renderResult();
     $('resultButton').disabled = !sharedEnded;
     if (!sharedEnded) { $('resultTitle').textContent = '아직 끝나지 않았어요'; $('resultDesc').textContent = `${state.inning}회 진행 중 · 9회 종료 후 결과가 확정됩니다.`; }
