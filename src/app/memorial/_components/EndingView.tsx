@@ -10,6 +10,7 @@ import { useToast } from './useToast';
 import {
   ENDING_COPY,
   FIREWORK_COLORS,
+  SIGH_WORDS,
   GAME_END_SEC,
   TAP_DELAY,
   dancerStyle,
@@ -19,15 +20,16 @@ import {
   scoresFor,
   type Scenario,
   tributeLayout,
+  waitingPersonStyle,
 } from './scene';
 
 type Note = { id: number; text: string; style: CSSProperties };
-type Spot = { id: number; x: number; y: number; sparks?: number[] };
+type Spot = { id: number; x: number; y: number; text?: string; sparks?: number[] };
 
 const MAX_FLOWERS = 300;
 const MAX_FIGURES = 120;
 
-/** 5페이지: 경기 결과별 공간 (패배 추모관 / 승리 클럽) */
+/** 5페이지: 경기 결과별 공간 (패배 추모관 / 승리 클럽 / 무승부 심야 대합실) */
 export function EndingView({
   roomId,
   team,
@@ -127,14 +129,18 @@ export function EndingView({
       const x = Math.max(116, Math.min(rect.width - 116, px));
       const y = Math.max(205, Math.min(rect.height - 180, py));
       pushTemp(setSpots, { id, x, y }, 4300);
-    } else {
+    } else if (mood === 'win') {
       const x = Math.max(35, Math.min(rect.width - 35, px));
       const y = Math.max(75, Math.min(rect.height - 130, py));
       pushTemp(setSpots, { id, x, y, sparks: Array.from({ length: 20 }, () => 55 + Math.random() * 65) }, 1100);
+    } else {
+      const x = Math.max(50, Math.min(rect.width - 50, px));
+      const y = Math.max(135, Math.min(rect.height - 165, py));
+      pushTemp(setSpots, { id, x, y, text: SIGH_WORDS[Math.floor(Math.random() * SIGH_WORDS.length)] }, 2200);
     }
   };
 
-  const screenClass = `endingScreen ${mood === 'win' ? 'isWin' : ''}`;
+  const screenClass = `endingScreen ${mood === 'win' ? 'isWin' : ''} ${mood === 'draw' ? 'isDraw' : ''}`;
 
   return (
     <AppFrame tag="MEMORIAL" step={5} toast={toast.message} note={error}>
@@ -209,6 +215,49 @@ export function EndingView({
                           style={{ '--a': `${i * 18}deg`, '--r': `${r}px`, '--c': FIREWORK_COLORS[i % FIREWORK_COLORS.length] } as CSSProperties}
                         />
                       ))}
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="waitingScene" aria-hidden="true">
+              <div className="waitingGlass" />
+              <div className="waitingLamp" />
+              <div className="waitingSign">
+                집에나 갑시다.<small>LAST TRAIN · SERVICE ENDED</small>
+              </div>
+              <div className="waitingPlatform" />
+              <div className="waitingBench">
+                <div className="benchBack" />
+                <div className="seat" />
+                <div className="legs" />
+              </div>
+              <div className="waitingPeople">
+                {mood === 'draw' &&
+                  Array.from({ length: Math.min(count, MAX_FIGURES) }, (_, i) => (
+                    <div key={i} className="waitingPerson" style={waitingPersonStyle(i)}>
+                      <div className="personPose">
+                        <div className="hair" />
+                        <div className="head" />
+                        <div className="face" />
+                        <div className="body" />
+                        <div className="arm l" />
+                        <div className="arm r" />
+                        <div className="leg l" />
+                        <div className="leg r" />
+                        <div className="shoe l" />
+                        <div className="shoe r" />
+                        {i % 7 === 4 ? <div className="sleep">zZ</div> : null}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              <div className="waitingHint">TAP · 하...</div>
+              <div className="waitingSighs">
+                {mood === 'draw' &&
+                  spots.map((s) => (
+                    <div key={s.id} className="waitingSigh" style={{ '--x': `${s.x}px`, '--y': `${s.y}px` } as CSSProperties}>
+                      {s.text}
                     </div>
                   ))}
               </div>

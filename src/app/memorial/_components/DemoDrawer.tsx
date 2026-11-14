@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { sceneQuery, type Scenario } from './scene';
 
-/** 원본 v10의 ⚙ 시연 조작. 점수를 바꿔 패배 추모관/승리 클럽을 오갈 수 있다. 공유 데이터는 바꾸지 않는다. */
+/** 원본 v10의 ⚙ 시연 조작. 점수를 바꿔 패배 추모관/승리 클럽/무승부 대합실을 오갈 수 있다. 공유 데이터는 바꾸지 않는다. */
 export function DemoDrawer({
   roomId,
   team,
@@ -53,6 +53,9 @@ export function DemoDrawer({
             </button>
             <button type="button" onClick={() => apply(oppScore + 1, oppScore)}>
               승리
+            </button>
+            <button type="button" onClick={() => apply(oppScore, oppScore)}>
+              무승부
             </button>
           </div>
         </div>
