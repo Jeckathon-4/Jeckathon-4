@@ -164,14 +164,14 @@ style.textContent += `.bgmToggle{margin-left:auto;margin-right:8px;background:no
   if (screenParam !== 'home') return;
   const el = document.createElement('div');
   el.className = 'splash';
-  el.innerHTML = '<div class="splashMark">☁️</div><div class="splashName">하늘아<br><span>눈치 챙겨</span></div><div class="splashSub">야구 지는 날, 우리는 하늘에 빕니다</div>';
+  el.innerHTML = '<img class="splashLogo" src="/brand/logo.png" alt="하늘아 눈치 챙겨!"><div class="splashSub">야구 지는 날, 우리는 하늘에 빕니다</div>';
   (document.getElementById('phoneInner') || document.body).appendChild(el);
   setTimeout(() => el.classList.add('out'), 3000);
   setTimeout(() => el.remove(), 4100);
 })();
 style.textContent += `.splash{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 38%,#24375a 0%,#111b2d 62%);color:#eef3fb;text-align:center;transition:opacity 1s ease,filter 1s ease}
 .splash.out{opacity:0;filter:brightness(.25);pointer-events:none}
-.splashMark{font-size:64px;animation:splashIn .9s cubic-bezier(.2,.8,.2,1) both}
+.splashLogo{width:min(68%,280px);height:auto;border-radius:28px;box-shadow:0 18px 50px rgba(0,0,0,.45);animation:splashIn .9s cubic-bezier(.2,.8,.2,1) both}
 .splashName{font-size:38px;font-weight:950;letter-spacing:-.05em;line-height:1.15;animation:splashIn .9s .15s cubic-bezier(.2,.8,.2,1) both}.splashName span{color:#ffce77}
 .splashSub{font-size:12px;color:#9fb3cf;animation:splashIn .9s .35s cubic-bezier(.2,.8,.2,1) both}
 @keyframes splashIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
@@ -242,6 +242,8 @@ function applyRoom(r, restarted) {
   state.flowers = r.flowers;
   $('tributeBtn').disabled = !sharedEnded;
 
+  // 결과 화면인데 경기가 진행 중 = 누군가 새 경기를 시작함 → 같이 기도관으로
+  if (state.step === 3 && !sharedEnded) { navigate('pray'); return; }
   if (state.step === 3) {
     renderResult();
     $('resultButton').disabled = !sharedEnded;
