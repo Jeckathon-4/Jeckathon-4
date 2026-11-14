@@ -1,5 +1,2 @@
-'use client';
-import {useState} from 'react';
-import {useRouter} from 'next/navigation';
-import {Button,Shell,Stadium} from '@/components/game-ui';
-export default function Home(){const [team,setTeam]=useState('롯데'),[room,setRoom]=useState('sajik-01');const router=useRouter();return <Shell><section className="home-hero"><span className="pill">야구 지는 날의 작은 피난처</span><h1>야구는 지고 있어도,<br/><em>우리의 기도는 계속된다.</em></h1><p>같은 하늘 아래 모여, 오늘의 날씨를 바꿔봐요.</p><Stadium/></section><section className="entry"><span className="eyebrow">01 · MY TEAM</span><h2>어느 팀을 응원하세요?</h2><div className="teams">{['롯데','한화','LG','KIA','삼성','두산','SSG','KT','NC','키움'].map(t=><button aria-pressed={team===t} className={team===t?'selected':''} key={t} onClick={()=>setTeam(t)}>⚾ {t}</button>)}</div><div className="match"><span>오늘의 데모 경기</span><strong>🌊 롯데 <small>VS</small> 한화 🦅</strong><p>사직 야구장 · 1~9회 자동 진행</p></div><label htmlFor="room">함께 입장할 룸 이름</label><input id="room" value={room} maxLength={40} onChange={e=>setRoom(e.target.value.replace(/[^a-zA-Z0-9_-]/g,''))}/><p className="hint">친구와 같은 이름을 입력하면 같은 경기장에 입장해요.</p><Button disabled={!room} onClick={()=>{localStorage.setItem('fan-team',team);router.push('/pray?room='+encodeURIComponent(room))}}>경기장 입장하기 <span>→</span></Button></section></Shell>}
+import {RoomScreen} from '@/components/room-screen';
+export default function Home(){return <RoomScreen screen="home"/>}

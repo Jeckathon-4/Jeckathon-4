@@ -28,3 +28,6 @@ Room: id, started_at, rain, sun, flowers. DB 원자 증가 사용.
 ## 검증
 두 기기에서 같은 room으로 입장 → 비 합산 확인 → 새로고침 복원 → 5회 마감 → 경기 종료 후 헌화 공유. 다른 room은 분리되어야 합니다.
 push 전 git pull 필수.
+
+## 원본 HTML 복원
+public/fan-demo.html이 원본 SVG·CSS·애니메이션을 보존합니다. RoomScreen은 iframe과 Supabase 사이의 메시지 연결을 담당합니다. 현재 디자인의 기준은 이 HTML입니다. 화면별 React 이관 시 원본 배치와 효과를 유지하세요. globals.css의 초기 카드 UI는 현재 화면에서 사용하지 않습니다. 방명록·묵념·폭죽은 현재 로컬 연출이며 원격 공유 대상은 비/해 합계, 경기 시계, 헌화 수입니다.

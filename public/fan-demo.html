@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>비라도 와라 — 앱형 프로토타입 v9</title>
+<style>
+:root{
+  --bg:#08101d;--panel:#141f33;--panel2:#1c2940;--line:#334661;--txt:#eef3fb;--muted:#9eb0c8;
+  --gold:#ffd27b;--blue:#84c8ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(circle at 20% 10%,#203351 0%,#0a1220 42%,#070b13 100%);color:var(--txt);font-family:system-ui,-apple-system,'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+button:focus-visible,input:focus-visible{outline:3px solid #86c5ff;outline-offset:2px}
+.wrapper{max-width:1180px;margin:0 auto;padding:28px 22px 40px;display:grid;grid-template-columns:1fr 430px;gap:46px;align-items:start}
+.left{position:sticky;top:24px;padding-top:18px}
+.eyebrow{font-size:12px;letter-spacing:.16em;color:#86bfff;font-weight:900}
+h1{font-size:clamp(34px,4.8vw,58px);line-height:1.12;letter-spacing:-.06em;margin:14px 0 16px}
+h1 em{font-style:normal;color:#ffd68a}.desc{color:#b7c4d8;line-height:1.85;font-size:15px;max-width:520px}.miniList{margin-top:24px;display:grid;gap:10px}.miniList div{font-size:13px;color:#dce6f1}.miniList b{color:#ffd68a}.mini{margin-top:24px;font-size:12px;color:#8497b2;line-height:1.75}
+.phone{width:100%;background:#0e1627;border:1px solid #33445f;border-radius:38px;padding:13px;box-shadow:0 35px 90px rgba(0,0,0,.45),inset 0 0 0 4px #121b2d}.phoneInner{height:820px;background:#111b2d;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.phoneGlow,.phoneDark{position:absolute;inset:0;pointer-events:none;transition:opacity .45s ease;z-index:4}.phoneGlow{background:rgba(255,244,199,.93);mix-blend-mode:screen;opacity:0}.phoneDark{background:rgba(2,8,22,.94);opacity:0}
+.header{position:relative;z-index:7;display:flex;justify-content:space-between;align-items:center;padding:18px 18px 10px}.logo{font-weight:900;font-size:14px;letter-spacing:-.03em}.logo span{color:#ffce77}.badge{font-size:10px;border:1px solid #3c4c66;color:#98adcc;border-radius:999px;padding:5px 8px}
+.view{display:none;flex:1;position:relative;z-index:5}.view.active{display:flex;flex-direction:column;animation:fade .22s ease}@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.content{padding:10px 18px 24px;flex:1;overflow:auto}.kicker{font-size:11px;letter-spacing:.13em;color:#8eaed2;font-weight:900;margin:8px 0}.title{font-size:28px;font-weight:950;line-height:1.28;letter-spacing:-.05em;margin:0 0 10px}.sub{font-size:13px;color:#a8b8ce;line-height:1.7;margin:0 0 16px}
+.teamgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.teamBtn{height:87px;border-radius:16px;border:1px solid #32435c;background:#1a2740;color:#eef4fb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:.15s}.teamBtn .icon{font-size:26px}.teamBtn .nm{font-size:11px;font-weight:800;text-align:center;line-height:1.3}.teamBtn.selected{background:#2b3d5c;border-color:#ffcf85;box-shadow:inset 0 0 0 1px #ffcf85}
+.fullBtn,.subBtn{width:100%;border-radius:16px;padding:16px 14px;font-weight:900;margin-top:16px}.fullBtn{background:#ffd27b;color:#162033}.subBtn{background:#23324c;color:#eef4fb;border:1px solid #42546f}.back{background:none;color:#9caec7;padding:0;font-size:12px;text-align:left;margin-bottom:10px}
+.fixture{background:#1a2840;border:1px solid #33445d;border-radius:20px;padding:18px;margin-bottom:12px}.fixtureTop{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#a8b8ce}.pill{padding:5px 9px;border-radius:999px;background:#2f435f;color:#d2e0f2;font-weight:800}.versus{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;text-align:center;padding:18px 0 14px}.versus .side{font-size:13px;font-weight:900}.versus .side span{display:block;font-size:26px;margin-bottom:7px}.versus .vs{font-size:12px;color:#90a4bf;font-weight:900}.fixtureFoot{font-size:12px;color:#dce5f0;text-align:center}.fixtureMeta{font-size:11px;color:#8398b5;text-align:center;line-height:1.7;margin-top:11px}
+/* arena */
+.gameScreen,.endingScreen{position:relative;flex:1;overflow:hidden;background:linear-gradient(180deg,#5a7e9c 0%,#93b8cf 38%,#23354d 100%)}
+.gameSkyTint,.gameSunLayer,.gameRainLayer,.gameFieldDark{position:absolute;inset:0;pointer-events:none;transition:opacity .45s ease;z-index:2}.gameSkyTint{background:rgba(255,205,95,.22);opacity:0}.gameSunLayer{background:radial-gradient(circle at 73% 18%,rgba(255,248,210,.96) 0%,rgba(255,232,151,.7) 17%,rgba(255,214,92,.26) 39%,transparent 70%);mix-blend-mode:screen;opacity:0}.gameRainLayer{background:repeating-linear-gradient(112deg,transparent 0 17px,rgba(171,224,255,.45) 18px 19px,transparent 20px 36px);background-size:72px 140px;opacity:0;animation:rain .5s linear infinite}.gameFieldDark{background:rgba(2,9,22,.92);opacity:0}@keyframes rain{to{background-position:-24px 130px}}
+.scoreTop{position:absolute;top:10px;left:12px;right:12px;z-index:6;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.scoreboard{flex:1;background:rgba(10,19,34,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:12px}.sbRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}.sideBox{display:flex;align-items:center;gap:8px}.sideBox.right{justify-content:flex-end}.teamMark{font-size:22px}.teamName{font-size:11px;font-weight:900;line-height:1.25}.teamState{font-size:10px;color:#adc2dc;margin-top:3px}.scoreBox{display:grid;grid-template-columns:auto auto auto;gap:8px;align-items:center;font-weight:950;font-size:26px;letter-spacing:-.05em}.scoreBox span{font-size:12px;color:#bcd0e4;font-weight:900}.phaseTag{background:rgba(9,18,31,.75);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:10px 12px;font-size:11px;font-weight:900;white-space:nowrap}
+.roleBanner{position:absolute;top:89px;left:12px;right:12px;z-index:6;background:rgba(14,23,38,.62);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px}.roleBanner .tiny{font-size:10px;color:#8ea9c8;font-weight:900;letter-spacing:.12em}.roleBanner .big{font-size:14px;font-weight:900;line-height:1.45;margin-top:4px}.roleBanner .big strong{color:#ffd88d}
+.fieldWrap{position:absolute;inset:0;z-index:1}.stadium{width:100%;height:100%;display:block}
+.bottomSheet{position:absolute;left:0;right:0;bottom:0;z-index:7;padding:0 12px 12px}.bottomCard{background:linear-gradient(180deg,rgba(10,17,30,.32) 0%,rgba(10,17,30,.9) 24%,rgba(10,17,30,.96) 100%);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:24px 24px 18px 18px;padding:14px 14px 16px}.meters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.meter{background:rgba(28,40,61,.85);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px}.meter .label{font-size:10px;color:#c3d2e5;margin-bottom:6px;font-weight:800}.meter .value{font-size:21px;font-weight:950;letter-spacing:-.04em}.meter .value.r{color:#8dd0ff}.meter .value.s{color:#ffdb82}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actionBtn{border-radius:17px;min-height:88px;color:#fff;font-weight:950;font-size:15px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;transition:transform .12s ease,filter .18s ease}.actionBtn:active{transform:scale(.96)}.actionBtn small{font-size:10px;font-weight:700;opacity:.88;line-height:1.35;text-align:center;padding:0 8px}.actionBtn.rain{background:linear-gradient(145deg,#275d91,#367db8)}.actionBtn.sun{background:linear-gradient(145deg,#b8771c,#e4a33a)}.actionBtn.reco{box-shadow:0 0 0 2px rgba(255,210,123,.9),0 0 22px rgba(255,210,123,.26)}.helper{font-size:11px;line-height:1.65;color:#92a7c4;margin-top:12px}.simTools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}.simTools button{background:#23324b;color:#eef4fb;border:1px solid #42556f;padding:11px 8px;border-radius:12px;font-size:11px;font-weight:800}
+.resultCard{background:#1a2840;border:1px solid #33455e;border-radius:22px;padding:24px 18px;text-align:center}.bigEmoji{font-size:62px}.resultTitle{font-size:27px;font-weight:950;line-height:1.35;letter-spacing:-.05em;margin:10px 0}.resultText{font-size:13px;line-height:1.8;color:#b5c3d6}.stats{display:flex;justify-content:space-around;gap:8px;background:#22314a;border-radius:16px;padding:15px 10px;margin:18px 0;font-size:12px}.stats b{display:block;font-size:16px;margin-top:6px}
+/* ending visual */
+.endingScreen{background:linear-gradient(180deg,#39445e 0%,#202738 37%,#121722 100%)}
+.endingTop{position:absolute;top:12px;left:12px;right:12px;z-index:6;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.endingChip,.endingScore{background:rgba(10,18,30,.68);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:10px 12px}.endingChip{font-size:12px;font-weight:900}.endingScore{font-size:11px;color:#c0d0e4}
+.endingScene{position:absolute;inset:0;z-index:1}
+.sceneBase{position:absolute;inset:0;background:radial-gradient(circle at 50% 18%,rgba(255,251,230,.09),transparent 28%), linear-gradient(180deg,#293043 0%,#1d2433 30%,#121722 60%,#0e1219 100%)}
+.sceneGlow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 24%,rgba(255,240,195,.22),transparent 32%)}
+.sceneGround{position:absolute;left:-3%;right:-3%;bottom:-12%;height:43%;background:radial-gradient(ellipse at center,#2b3446 0%,#171d28 62%,#10151d 100%);border-top-left-radius:50% 32%;border-top-right-radius:50% 32%}
+.sceneCenter{position:absolute;left:50%;transform:translateX(-50%);bottom:180px;width:130px;height:180px;border-radius:70px 70px 28px 28px;background:linear-gradient(180deg,#474c57 0%,#232933 68%,#171b23 100%);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.sceneCenter:before{content:'';position:absolute;left:50%;transform:translateX(-50%);top:-14px;width:110px;height:24px;border-radius:20px;background:#5f6877;box-shadow:0 6px 18px rgba(0,0,0,.24)}
+.sceneCenter:after{content:'';position:absolute;left:50%;transform:translateX(-50%);top:22px;width:54px;height:54px;border-radius:50%;background:rgba(255,244,194,.16);filter:blur(1px)}
+.sceneLabel{position:absolute;left:50%;transform:translateX(-50%);bottom:225px;z-index:3;text-align:center}.sceneLabel .emoji{font-size:32px}.sceneLabel .line1{font-size:15px;font-weight:900;margin-top:8px}.sceneLabel .line2{font-size:12px;color:#b8c5d7;margin-top:4px}
+.flowerField{position:absolute;left:10px;right:10px;bottom:84px;top:150px;z-index:4;overflow:hidden}.tribute{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;animation:pop .28s ease}.tribute .f{font-size:24px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}.tribute .m{font-size:10px;margin-top:1px;color:#d8e2f0;opacity:.9}.tribute.small .f{font-size:20px}.tribute.big .f{font-size:28px}@keyframes pop{from{transform:translateY(8px) scale(.85);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.endingBottom{position:absolute;left:0;right:0;bottom:0;z-index:7;padding:0 12px 12px}.endingCard{background:linear-gradient(180deg,rgba(10,17,30,.32) 0%,rgba(10,17,30,.9) 24%,rgba(10,17,30,.96) 100%);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:24px 24px 18px 18px;padding:14px 14px 16px}.endingMini{display:flex;justify-content:space-between;gap:8px;margin-bottom:12px}.endingMini .box{flex:1;background:rgba(28,40,61,.85);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px}.endingMini .label{font-size:10px;color:#c3d2e5;margin-bottom:6px;font-weight:800}.endingMini .value{font-size:19px;font-weight:950;letter-spacing:-.04em}.miniBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ghostBtn{width:100%;border-radius:16px;padding:14px;font-weight:900;background:#23324c;color:#eef4fb;border:1px solid #42546f}
+.guestStrip{display:flex;gap:8px;overflow:auto;padding-bottom:2px;margin-top:12px}.guestChip{flex:0 0 auto;background:#233149;border-radius:999px;padding:10px 12px;color:#ecf3fb;font-size:11px;white-space:nowrap}.inputRow{display:flex;gap:8px;margin-top:12px}.inputRow input{flex:1;min-width:0;background:#152136;color:#fff;border:1px solid #40526d;border-radius:12px;padding:12px}.inputRow button{padding:0 14px;border-radius:12px;background:#ffd17b;color:#152033;font-weight:900}
+.footer{position:relative;z-index:7;border-top:1px solid #283752;padding:12px 18px 16px;display:flex;justify-content:space-between;font-size:10px;color:#8398b4}.toast{position:absolute;left:20px;right:20px;bottom:78px;z-index:30;background:#f5d9a0;color:#1a2435;border-radius:14px;padding:12px 14px;text-align:center;font-size:12px;font-weight:900;box-shadow:0 12px 40px rgba(0,0,0,.38);opacity:0;transform:translateY(10px);pointer-events:none;transition:.24s}.toast.show{opacity:1;transform:translateY(0)}
+@media (max-width:960px){.wrapper{grid-template-columns:1fr;max-width:530px;padding:14px 8px 34px;gap:20px}.left{position:static;padding:4px 6px 0}.desc{font-size:13px}.mini{margin-top:10px}.phone{max-width:430px;margin:0 auto}.phoneInner{height:790px}}
+@media (max-width:420px){.phone{padding:9px;border-radius:28px}.phoneInner{height:760px;border-radius:20px}.title{font-size:25px}.teamBtn{height:81px}.bottomCard,.endingCard{padding:12px}}
+
+/* 물이 차오르는 야구장 + 클릭 순간 효과 */
+.floodWater{position:absolute;left:0;right:0;bottom:0;height:0;z-index:3;pointer-events:none;overflow:visible;transition:height .7s cubic-bezier(.2,.75,.3,1);background:linear-gradient(180deg,rgba(117,212,244,.75) 0%,rgba(40,130,200,.85) 28%,rgba(12,62,132,.94) 100%);box-shadow:inset 0 16px 28px rgba(207,248,255,.24)}
+.waterSurface{position:absolute;left:-10%;top:-9px;width:120%;height:23px;border-top:3px solid rgba(222,254,255,.9);border-radius:50% 50% 0 0;box-shadow:0 -4px 19px rgba(151,236,255,.85),0 8px 22px rgba(220,252,255,.3);animation:surfaceMove 2.4s ease-in-out infinite alternate}
+.waterSurface:after{content:'';position:absolute;left:3%;top:9px;width:94%;height:8px;border-top:2px solid rgba(210,247,255,.45);border-radius:50%;animation:surfaceMove 3s ease-in-out infinite alternate-reverse}
+.waterShimmer{position:absolute;inset:12px 0 0;background:repeating-linear-gradient(175deg,transparent 0 27px,rgba(211,253,255,.12) 28px 30px,transparent 31px 60px);animation:waterDrift 5s linear infinite}
+@keyframes surfaceMove{from{transform:translateX(-4%) scaleY(.8)}to{transform:translateX(4%) scaleY(1.3)}}
+@keyframes waterDrift{to{background-position:90px 0}}
+.weatherBurst{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.dropParticle{position:absolute;top:-8%;width:7px;height:21px;border-radius:70% 70% 65% 65%;background:linear-gradient(160deg,#fff 0%,#a9eaff 45%,#4cacec 100%);transform:rotate(15deg);filter:drop-shadow(0 0 5px rgba(219,247,255,.8));animation:dropFall var(--duration,.9s) cubic-bezier(.27,.62,.6,1) forwards;animation-delay:var(--delay,0s)}
+@keyframes dropFall{0%{opacity:0;transform:translateY(-30px) rotate(15deg) scale(.6)}9%{opacity:1}78%{opacity:1}100%{opacity:0;transform:translateY(var(--fall,660px)) rotate(15deg) scale(1.2)}}
+.sunRayParticle{position:absolute;top:-10%;left:var(--left,65%);width:var(--width,40px);height:95%;transform-origin:50% 0;background:linear-gradient(180deg,rgba(255,252,228,.94) 0%,rgba(255,232,146,.64) 38%,rgba(255,217,109,0) 96%);clip-path:polygon(48% 0,52% 0,100% 100%,0 100%);mix-blend-mode:screen;filter:blur(2px);opacity:0;animation:sunBeam var(--duration,1.2s) ease-out forwards;animation-delay:var(--delay,0s)}
+@keyframes sunBeam{0%{opacity:0;transform:rotate(var(--rot,0deg)) scaleY(.25)}24%{opacity:.98;transform:rotate(var(--rot,0deg)) scaleY(1)}70%{opacity:.78}100%{opacity:0;transform:rotate(var(--rot,0deg)) scaleY(1.15)}}
+.rippleParticle{position:absolute;left:var(--left,50%);bottom:var(--bottom,34%);height:12px;width:12px;border:3px solid rgba(222,252,255,.9);border-radius:50%;animation:rippleSpread .78s ease-out forwards;box-shadow:0 0 12px rgba(206,245,255,.8)}
+@keyframes rippleSpread{from{opacity:1;transform:translate(-50%,0) scale(.25)}to{opacity:0;transform:translate(-50%,0) scale(5.5)}}
+@media(prefers-reduced-motion:reduce){.dropParticle,.sunRayParticle,.rippleParticle{animation-duration:.12s!important}.waterSurface,.waterShimmer{animation:none}}
+
+/* V5: controls float directly on the field, no bottom card */
+.roleBanner{top:88px;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:88%;border-radius:999px;padding:8px 15px;background:rgba(13,25,43,.48);border:1px solid rgba(255,255,255,.18)}
+.roleBanner .big{font-size:12px;margin:0;white-space:nowrap}
+.minimalControls{position:absolute;bottom:49px;left:0;right:0;z-index:9;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.weatherCount{display:flex;gap:25px;align-items:center;justify-content:center;margin-bottom:12px;color:white;font-size:13px;font-variant-numeric:tabular-nums;text-shadow:0 1px 9px #061528,0 0 12px #061528}
+.weatherCount span{min-width:75px;text-align:center}.weatherCount b{font-size:14px}
+.orbActions{display:flex;align-items:center;justify-content:center;gap:44px;pointer-events:auto}
+.orb{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.5);box-shadow:0 8px 25px #0006,inset 0 2px 5px #ffffff55;backdrop-filter:blur(5px);transition:transform .14s,box-shadow .2s}
+.orb:active{transform:scale(.87)}.orb .orbIcon{font-size:33px;line-height:1}
+.orb.rain{background:radial-gradient(circle at 30% 20%,rgba(139,207,255,.92),rgba(34,95,157,.8))}
+.orb.sun{background:radial-gradient(circle at 30% 20%,rgba(255,236,153,.98),rgba(225,146,26,.84))}
+.orb.reco{box-shadow:0 0 0 3px #ffffffb3,0 0 26px #ffffff90,0 9px 28px #0006}
+.underActions{display:flex;gap:44px;justify-content:center;margin-top:7px;font-size:11px;font-weight:800;text-shadow:0 2px 8px #000;width:188px}
+.underActions span{width:72px;text-align:center}
+.demoToggle{position:absolute;z-index:10;right:15px;bottom:19px;width:29px;height:29px;background:rgba(19,35,55,.5);color:#eef5ff;border:1px solid #ffffff50;border-radius:50%;font-size:15px;display:grid;place-items:center;backdrop-filter:blur(5px)}
+.demoDrawer{position:absolute;z-index:14;bottom:57px;left:14px;right:14px;border:1px solid #ffffff55;background:rgba(15,26,43,.94);backdrop-filter:blur(15px);border-radius:18px;padding:14px;color:#fff;box-shadow:0 10px 40px #0008}
+.demoDrawer.hidden{display:none}.demoTitle{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:12px;margin-bottom:12px}.demoTitle button{color:white;background:none;font-size:23px;padding:0 6px}
+.demoButtons{display:flex;gap:7px}.demoButtons button,.demoFinish{padding:11px 7px;font-size:11px;font-weight:800;background:#304764;color:white;border-radius:10px;flex:1}.demoFinish{width:100%;margin-top:8px;background:#f2d08b;color:#172339}
+/* On the active arena, use the full visual area. */
+#v2{margin-top:-2px}#v2 .gameScreen{min-height:0}
+@media(max-width:420px){.orb{width:66px;height:66px}.orbActions{gap:37px}.minimalControls{bottom:42px}}
+
+
+/* v6 — 꽃만 남는 어두운 추모관 */
+.endingScreen{background:#070809}
+.sceneBase{background:radial-gradient(ellipse at 50% 65%,#151719 0%,#090a0b 60%,#050607 100%)}
+.sceneGlow,.sceneGround,.sceneCenter{display:none}
+.sceneLabel{top:70px;bottom:auto;z-index:2;opacity:.78;pointer-events:none}
+.sceneLabel .emoji{font-size:19px}.sceneLabel .line1{font-size:13px}.sceneLabel .line2{display:none}
+.flowerField{inset:0;z-index:4;overflow:hidden;pointer-events:none}
+.tribute{position:absolute;width:clamp(110px,35%,175px);height:auto;aspect-ratio:1/1.5;display:block;transform-origin:47% 82%;filter:drop-shadow(0 6px 7px rgba(0,0,0,.28));animation:flowerFall .52s cubic-bezier(.17,.8,.26,1.08) both}
+.tribute svg{width:100%;height:100%;display:block;overflow:visible}
+@keyframes flowerFall{from{opacity:0;translate:0 -65px;scale:1.13}65%{opacity:1}to{opacity:1;translate:0 0;scale:1}}
+.endingBottom{padding:0 12px 12px;pointer-events:none}
+.endingCard{padding:0;background:none;border:0;backdrop-filter:none;box-shadow:none;pointer-events:none}
+.endingMini{display:flex;justify-content:center;margin-bottom:8px}
+.endingMini .box{flex:0 0 auto;background:rgba(7,9,12,.56);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:5px 12px;backdrop-filter:blur(5px)}
+.endingMini .box:nth-child(2){display:none}
+.endingMini .label{display:none}.endingMini .value{font-size:12px;font-weight:700}
+.endingCard .miniBtns{display:flex;justify-content:center;gap:12px;pointer-events:none}
+#tributeBtn{margin:0 !important;width:74px;height:74px;border-radius:50%;padding:0;border:1px solid rgba(255,255,255,.25);background:radial-gradient(circle at 35% 25%,#e8e8e1,#b5b8b2);color:#1a2020;font-size:12px;box-shadow:0 8px 30px #0008;pointer-events:auto}
+#tributeBtn:active{transform:scale(.92)}
+#clearTributesBtn{width:45px;height:45px;border-radius:50%;padding:0;align-self:center;background:#24272caa;font-size:11px;pointer-events:auto}
+.endingCard .guestStrip,.endingCard .inputRow,.endingCard .miniBtns:last-child{display:none}
+.endingTop{z-index:6;pointer-events:none}
+.endingChip,.endingScore{background:rgba(10,12,16,.48);border-color:rgba(255,255,255,.1)}
+
+
+/* v7 — tiny chant composer, ambient bubbles */
+.chantLayer{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.chantBubble{position:absolute;left:var(--x,50%);top:var(--y,48%);max-width:75%;padding:9px 13px;border-radius:19px;font-size:13px;font-weight:800;letter-spacing:-.02em;line-height:1.35;box-shadow:0 8px 28px #0005;backdrop-filter:blur(5px);border:1px solid #ffffff66;color:#fff;background:rgba(22,42,64,.8);animation:chantFloat 2.6s ease-out forwards;overflow-wrap:anywhere;text-shadow:0 1px 3px #0008}
+.chantBubble.sunText{background:rgba(132,76,13,.83);color:#fff7d7}
+@keyframes chantFloat{0%{opacity:0;transform:translate(-50%,14px) scale(.88)}15%{opacity:1;transform:translate(-50%,0) scale(1)}78%{opacity:1}100%{opacity:0;transform:translate(-50%,-75px)}}
+.chantToggle{position:absolute;z-index:11;bottom:16px;left:16px;width:32px;height:32px;border-radius:50%;background:rgba(10,19,33,.58);border:1px solid #ffffff77;color:white;font-size:18px;backdrop-filter:blur(7px)}
+.chantComposer{position:absolute;left:12px;right:12px;bottom:106px;z-index:15;display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:16px;background:rgba(12,22,39,.92);border:1px solid #ffffff44;backdrop-filter:blur(14px);box-shadow:0 10px 35px #0007}
+.chantComposer.hidden{display:none}.chantComposer input{background:transparent;color:#fff;border:0;outline:0;flex:1;min-width:0;padding:8px 6px;font-size:13px}.chantComposer input::placeholder{color:#bac9d9}.chantComposer button{background:#f1ce8e;color:#152338;border-radius:11px;padding:8px 12px;font-weight:900}
+/* separate loss / win scenes */
+.victoryScene{display:none;position:absolute;inset:0;z-index:3;overflow:hidden;background:linear-gradient(180deg,#3784c4 0%,#7bd6ff 38%,#ffe0a0 73%,#e8a64c 100%)}
+.endingScreen.isWin{background:#68bef2}.endingScreen.isWin .sceneBase,.endingScreen.isWin .sceneLabel,.endingScreen.isWin .flowerField{display:none}
+.endingScreen.isWin .victoryScene{display:block}
+.endingScreen.isWin .endingChip,.endingScreen.isWin .endingScore{background:rgba(25,58,92,.42)}
+.winSun{position:absolute;top:8%;right:15%;width:145px;height:145px;border-radius:50%;background:radial-gradient(circle,#fff9cd 0%,#ffe57f 42%,#ffd56766 62%,transparent 72%);box-shadow:0 0 75px 35px #fff3a866;animation:shine 4s ease-in-out infinite alternate}
+@keyframes shine{to{scale:1.12;filter:brightness(1.35)}}
+.winField{position:absolute;left:-15%;right:-15%;bottom:-5%;height:43%;border-radius:50% 50% 0 0;background:linear-gradient(180deg,#4c9f65,#1e6954);box-shadow:0 -12px 25px #f3cf8855}
+.winStage{position:absolute;top:37%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:24px;font-weight:950;color:#fff7c8;letter-spacing:3px;text-shadow:0 4px 26px #ad691a,0 0 25px #ffdb79}
+.winStage span{font-size:77px;vertical-align:middle;letter-spacing:-6px;margin:0 10px}
+.confettiField{position:absolute;inset:0;pointer-events:none}
+.confettiPiece{position:absolute;width:12px;height:22px;border-radius:3px;background:var(--c,#ffdf73);box-shadow:0 3px 9px #9d5a2b44;animation:confettiIn .65s ease-out both}
+@keyframes confettiIn{from{opacity:0;transform:translateY(-65px) rotate(-90deg) scale(.5)}to{opacity:1;transform:translateY(0) rotate(var(--r,30deg)) scale(1)}}
+.endingScreen.isWin #tributeBtn{background:radial-gradient(circle at 35% 20%,#fffcce,#ffcb60);border-color:#fff1b2;color:#71400b;box-shadow:0 5px 30px #ffdc8d88}
+.endingScreen.isWin .endingMini .box{background:rgba(74,43,8,.43)}
+.memorialMessages{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.memoryNote{position:absolute;left:var(--x,45%);top:var(--y,40%);max-width:72%;padding:7px 11px;border-radius:15px;background:rgba(16,20,27,.79);border:1px solid #ffffff33;color:#f2f0e9;font-size:11px;font-weight:700;line-height:1.4;overflow-wrap:anywhere;box-shadow:0 4px 15px #0006;animation:noteIn .4s ease-out both;transform:rotate(var(--a,-5deg))}
+.isWin .memoryNote{background:rgba(255,248,212,.9);border-color:#fff;color:#805008;box-shadow:0 7px 20px #8f692966}
+@keyframes noteIn{from{opacity:0;translate:0 25px}to{opacity:1;translate:0 0}}
+.tributeComposer{display:flex;pointer-events:auto;align-items:center;gap:7px;width:min(95%,310px);margin:10px auto 0;background:rgba(9,14,22,.66);border-radius:999px;padding:5px 6px 5px 13px;border:1px solid #ffffff33;backdrop-filter:blur(10px)}
+.tributeComposer input{flex:1;min-width:0;border:0;background:transparent;outline:0;color:#fff;font-size:12px;padding:7px 1px}.tributeComposer input::placeholder{color:#bac1cb}.tributeComposer button{background:#d6d6d0;border-radius:999px;padding:9px 13px;font-size:11px;font-weight:850;color:#25262a;white-space:nowrap}
+.endingScreen.isWin .tributeComposer{background:rgba(87,53,15,.48)}.endingScreen.isWin .tributeComposer button{background:#ffe5a4;color:#6a430c}
+.endingCard .tributeComposer{display:flex}
+@media(max-width:420px){.winStage span{font-size:62px}.chantComposer{bottom:103px}}
+
+/* v8 — short-lived shouts and tap-to-light memorial */
+.memoryNote{animation:memorialWhisper 3.25s ease-out forwards!important;pointer-events:none}
+@keyframes memorialWhisper{0%{opacity:0;translate:0 15px;scale:.9}13%{opacity:1;translate:0 0;scale:1}72%{opacity:1}100%{opacity:0;translate:0 -42px;scale:.98}}
+.sceneTapHint{position:absolute;top:150px;left:0;right:0;z-index:7;text-align:center;color:#bac1c8;font-size:11px;letter-spacing:.02em;pointer-events:none;opacity:.8}
+.endingScreen.isWin .sceneTapHint{display:none}
+.cigaretteMoments{position:absolute;inset:0;z-index:8;pointer-events:none;overflow:hidden}
+.cigaretteMoment{position:absolute;width:220px;height:180px;transform:translate(-50%,-50%);pointer-events:none;animation:momentFade 4.2s ease-in-out forwards;filter:drop-shadow(0 8px 20px #0009)}
+.cigaretteMoment svg{width:100%;height:100%;display:block;overflow:visible}
+.cigaretteMoment .ember{animation:emberGlow .9s ease-in-out infinite alternate;transform-origin:center}
+.cigaretteMoment .smoke{stroke-dasharray:3 8;animation:smokeRise 2.4s ease-out infinite;opacity:.66}
+@keyframes momentFade{0%{opacity:0;scale:.8}12%{opacity:1;scale:1}76%{opacity:1}100%{opacity:0;scale:1.06}}
+@keyframes emberGlow{from{opacity:.35;filter:drop-shadow(0 0 2px #ff9d40)}to{opacity:1;filter:drop-shadow(0 0 10px #ff6d19)}}
+@keyframes smokeRise{from{stroke-dashoffset:35;opacity:.18;transform:translateY(8px)}to{stroke-dashoffset:-28;opacity:.75;transform:translateY(-9px)}}
+.endingScreen.isWin .cigaretteMoments{display:none}
+
+/* V9: full-screen victory club; visuals are intentionally the UI */
+.endingScreen.isWin{background:#09031b}
+.endingScreen.isWin .victoryScene{background:radial-gradient(ellipse at 50% 65%,#432078 0%,#150c3b 47%,#070418 90%);isolation:isolate}
+.endingScreen.isWin .winSun,.endingScreen.isWin .winField,.endingScreen.isWin .winStage{display:none}
+.clubGlow{position:absolute;inset:0;background:radial-gradient(circle at 22% 26%,#e33caa50,transparent 33%),radial-gradient(circle at 82% 33%,#16d9ff47,transparent 36%),radial-gradient(circle at 51% 84%,#e39b263d,transparent 42%);animation:clubPulse 1.7s ease-in-out infinite alternate}
+@keyframes clubPulse{to{filter:hue-rotate(100deg) brightness(1.9)}}
+.clubMirror{position:absolute;top:12%;left:50%;width:72px;height:72px;border-radius:50%;transform:translateX(-50%);background:repeating-linear-gradient(0deg,#d3e8ff 0 7px,#8097cc 8px 10px),repeating-linear-gradient(90deg,#c4d6ef 0 9px,#6573a5 10px 12px);background-blend-mode:multiply;box-shadow:0 0 25px #fff9,0 0 100px #d365ff92;animation:mirrorSwing 4s linear infinite;z-index:2}
+.clubMirror:before{content:'';position:absolute;left:50%;bottom:100%;width:2px;height:90px;background:#c6b6e7}
+@keyframes mirrorSwing{50%{rotate:15deg}100%{rotate:0deg}}
+.clubLaser{position:absolute;left:50%;top:22%;height:78%;width:30%;transform-origin:top center;clip-path:polygon(49% 0,51% 0,100% 100%,0 100%);background:linear-gradient(180deg,#59e7ffad,transparent);mix-blend-mode:screen;filter:blur(5px);animation:laserMove 2.6s ease-in-out infinite alternate}
+.clubLaser.b{background:linear-gradient(180deg,#ff4ecdcc,transparent);animation-delay:-1.3s;animation-duration:2.2s}
+.clubLaser.c{background:linear-gradient(180deg,#effa72a8,transparent);animation-delay:-.4s;animation-duration:3.1s}
+@keyframes laserMove{from{transform:rotate(-60deg)}to{transform:rotate(60deg)}}
+.clubFloor{position:absolute;left:-30%;right:-30%;bottom:-18%;height:45%;transform:perspective(350px) rotateX(56deg);transform-origin:center top;background:repeating-linear-gradient(90deg,transparent 0 62px,#ee63fb55 63px 67px),repeating-linear-gradient(0deg,#1e1547 0 42px,#57d8ff66 43px 47px);box-shadow:0 0 50px #d341ec77}
+.clubHeadline{position:absolute;left:0;right:0;top:30%;text-align:center;font-size:clamp(36px,12vw,64px);font-weight:1000;font-style:italic;letter-spacing:.1em;color:#fff9dc;text-shadow:0 0 12px #fff,0 0 34px #ff39de,0 0 65px #ff39de;animation:clubPulse .7s infinite alternate}
+.clubDancers{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.clubDancer{position:absolute;left:var(--x);bottom:var(--y);width:64px;height:125px;transform:translateX(-50%) scale(var(--scale));transform-origin:bottom center;filter:drop-shadow(0 0 13px var(--clr));animation:dancerEnter .4s ease-out both}
+.clubDancer .danceBody{position:absolute;inset:0;animation:danceBounce var(--tempo,.48s) ease-in-out infinite alternate}
+.clubDancer .head{position:absolute;top:9px;left:20px;width:25px;height:25px;background:var(--clr);border-radius:50%;box-shadow:0 0 18px var(--clr)}
+.clubDancer .torso{position:absolute;top:37px;left:24px;width:18px;height:46px;border-radius:10px;background:var(--clr)}
+.clubDancer .arm,.clubDancer .leg{position:absolute;border-radius:12px;background:var(--clr);transform-origin:top center}
+.clubDancer .arm{top:41px;width:9px;height:47px}.clubDancer .arm.left{left:19px;animation:armLeft .46s ease-in-out infinite alternate}.clubDancer .arm.right{right:18px;animation:armRight .6s ease-in-out infinite alternate}
+.clubDancer .leg{top:77px;width:10px;height:43px}.clubDancer .leg.left{left:25px;rotate:17deg}.clubDancer .leg.right{right:23px;rotate:-20deg}
+@keyframes dancerEnter{from{opacity:0;translate:0 35px}to{opacity:1;translate:0 0}}
+@keyframes danceBounce{from{transform:translateY(4px) rotate(-7deg)}to{transform:translateY(-12px) rotate(8deg)}}
+@keyframes armLeft{from{transform:rotate(45deg)}to{transform:rotate(175deg)}}
+@keyframes armRight{from{transform:rotate(-40deg)}to{transform:rotate(-175deg)}}
+.clubTapHint{position:absolute;top:48%;left:0;right:0;text-align:center;font-size:11px;color:#ffffffc7;letter-spacing:.1em;z-index:5;pointer-events:none;animation:clubHintBlink 2s ease-in-out infinite}
+@keyframes clubHintBlink{50%{opacity:.25}}
+.clubFirework{position:absolute;left:var(--x);top:var(--y);width:0;height:0;z-index:9;pointer-events:none}
+.clubSpark{position:absolute;left:0;top:0;width:7px;height:16px;border-radius:5px;background:var(--c);box-shadow:0 0 12px var(--c),0 0 26px var(--c);animation:clubBurst .83s cubic-bezier(.16,.64,.25,1) forwards;transform-origin:center}
+@keyframes clubBurst{from{opacity:1;transform:rotate(var(--a)) translateY(0) scale(1)}to{opacity:0;transform:rotate(var(--a)) translateY(calc(-1 * var(--r))) scale(.3)}}
+.clubFireworks{position:absolute;inset:0;pointer-events:none;z-index:9}
+.endingScreen.isWin #tributeBtn{background:radial-gradient(circle at 30% 20%,#ff9ae9,#a14ff7);color:white;border:1px solid #ffffffbb;box-shadow:0 0 25px #e338df88;font-size:30px}
+.endingScreen.isWin .endingMini .box{background:#19083bb3}
+.endingScreen.isWin .tributeComposer{background:#160b37c7;border-color:#ff6de66b}
+.endingScreen.isWin .tributeComposer button{background:#f7a5f9;color:#340b48}
+@media(prefers-reduced-motion:reduce){.clubGlow,.clubMirror,.clubLaser,.clubHeadline,.clubDancer .danceBody,.clubDancer .arm{animation:none}}
+
+/* V10 — sleepless late-night waiting room for draws */
+.endingScreen.isDraw{background:#101a26}
+.endingScreen.isDraw .sceneBase,.endingScreen.isDraw .sceneGlow,.endingScreen.isDraw .sceneGround,.endingScreen.isDraw .sceneCenter,.endingScreen.isDraw .sceneLabel,.endingScreen.isDraw .flowerField,.endingScreen.isDraw .victoryScene,.endingScreen.isDraw .sceneTapHint,.endingScreen.isDraw .cigaretteMoments{display:none}
+.waitingScene{display:none;position:absolute;inset:0;overflow:hidden;isolation:isolate;z-index:3;background:linear-gradient(#273d50 0%,#344c5c 38%,#526779 56%,#252e38 56.3%,#111b29 100%)}
+.endingScreen.isDraw .waitingScene{display:block}
+.waitingGlass{position:absolute;top:12%;left:7%;width:86%;height:40%;border:10px solid #203240;background:repeating-linear-gradient(90deg,#1a3041 0 26%,#142637 26.5% 27.4%,#1a3041 28% 52%);box-shadow:inset 0 0 80px #030b17c7,0 6px 20px #070d198c}
+.waitingGlass:before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#c3e6ef24,transparent 42%,#c6e5fb12 67%,transparent);}
+.waitingLamp{position:absolute;top:6%;left:13%;right:13%;height:9px;background:#d7f3f1;box-shadow:0 0 15px #d9fcffba,0 0 68px #aee9ff65;animation:fluoro 7s steps(1,end) infinite}
+@keyframes fluoro{0%,92%,96%,100%{opacity:1}93%,95%{opacity:.4}}
+.waitingSign{position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#172a38c9;border:1px solid #94a9b76b;border-radius:4px;padding:12px 18px;color:#f3f4f0;text-align:center;white-space:nowrap;font-size:20px;font-weight:900;letter-spacing:-.05em;box-shadow:0 4px 15px #0007}
+.waitingSign small{display:block;font-size:10px;color:#b4c6d4;margin-top:3px;letter-spacing:.12em;font-weight:500}
+.waitingPlatform{position:absolute;left:0;right:0;bottom:0;height:42%;background:repeating-linear-gradient(90deg,transparent 0 76px,#ffffff0b 77px 79px),linear-gradient(180deg,#44505d,#1a2432);transform:perspective(450px) rotateX(23deg) scale(1.35);transform-origin:top center;border-top:12px solid #d3b65f;box-shadow:0 -7px 22px #0008}
+.waitingBench{position:absolute;bottom:29%;left:11%;right:11%;height:15%;z-index:2}
+.waitingBench .back{position:absolute;inset:0 0 35%;background:repeating-linear-gradient(0deg,#506478 0 15px,#273c51 17px 23px);border:5px solid #152c3d;border-radius:8px;box-shadow:0 7px 14px #0009}
+.waitingBench .seat{position:absolute;bottom:25%;left:-4%;right:-4%;height:17%;border-radius:4px;background:#506378;border:4px solid #172b3a}
+.waitingBench .legs:before,.waitingBench .legs:after{content:'';position:absolute;bottom:0;width:9px;height:28%;background:#111b27}
+.waitingBench .legs:before{left:10%}.waitingBench .legs:after{right:10%}
+.waitingPeople{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.waitingPerson{position:absolute;bottom:var(--bottom);left:var(--left);width:58px;height:100px;transform:translateX(-50%) scale(var(--scale));transform-origin:bottom center;filter:drop-shadow(0 8px 8px #0007);animation:waitArrival .55s cubic-bezier(.23,.83,.31,1.2) both;z-index:var(--z)}
+.waitingPerson .personPose{position:absolute;inset:0;animation:waitBreath calc(2.2s + var(--beat)) ease-in-out infinite alternate}
+.waitingPerson .head{position:absolute;top:10px;left:19px;width:22px;height:23px;background:var(--skin);border-radius:50%;transform:rotate(var(--lean));box-shadow:inset -4px -2px #0002}
+.waitingPerson .hair{position:absolute;top:7px;left:18px;width:24px;height:11px;background:var(--hair);border-radius:14px 14px 5px 5px;transform:rotate(var(--lean))}
+.waitingPerson .body{position:absolute;top:32px;left:12px;width:37px;height:39px;border-radius:13px 13px 9px 9px;background:var(--shirt);transform:rotate(var(--lean));box-shadow:inset -6px -5px #0002}
+.waitingPerson .arm{position:absolute;top:40px;width:11px;height:33px;border-radius:10px;background:var(--shirt)}
+.waitingPerson .arm.l{left:6px;transform:rotate(23deg)}.waitingPerson .arm.r{right:3px;transform:rotate(-26deg)}
+.waitingPerson .leg{position:absolute;top:68px;width:14px;height:29px;border-radius:7px;background:#1c2837}.waitingPerson .leg.l{left:15px;transform:rotate(10deg)}.waitingPerson .leg.r{right:11px;transform:rotate(-12deg)}
+.waitingPerson .shoe{position:absolute;bottom:0;width:21px;height:8px;border-radius:9px;background:#121820}.waitingPerson .shoe.l{left:7px}.waitingPerson .shoe.r{right:5px}
+.waitingPerson .face{position:absolute;top:21px;left:27px;width:9px;height:2px;border-bottom:1px solid #3d3738;opacity:.85}
+.waitingPerson .sleep{position:absolute;right:-5px;top:-10px;font-size:15px;color:#d4e8ff;transform:rotate(-15deg)}
+@keyframes waitArrival{from{opacity:0;translate:-18px -18px;scale:.75}to{opacity:1;translate:0 0;scale:1}}
+@keyframes waitBreath{to{translate:0 2px;rotate:1deg}}
+.waitingSighs{position:absolute;inset:0;z-index:8;pointer-events:none;overflow:hidden}
+.waitingSigh{position:absolute;left:var(--x);top:var(--y);font-size:16px;font-weight:800;color:#f3f7ff;white-space:nowrap;text-shadow:0 2px 9px #000c;animation:sighFloat 2.1s ease-out forwards}
+.waitingSigh:after{content:'◌';position:absolute;left:-24px;top:8px;color:#bcd2e5;filter:blur(3px);font-size:24px}
+@keyframes sighFloat{0%{opacity:0;transform:translate(-50%,12px) scale(.85)}20%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-42px)}}
+.waitingHint{position:absolute;top:45%;left:0;right:0;text-align:center;font-size:11px;color:#d4dee5;opacity:.8;pointer-events:none;z-index:5}
+.endingScreen.isDraw .endingChip,.endingScreen.isDraw .endingScore{background:#111d2cc4}
+.endingScreen.isDraw #tributeBtn{background:linear-gradient(135deg,#c8d5d9,#7f99a9);color:#16232d;box-shadow:0 7px 22px #0009;border:1px solid #cfdee9;font-size:27px}
+.endingScreen.isDraw .endingMini .box,.endingScreen.isDraw .tributeComposer{background:#101f2bd9}
+.endingScreen.isDraw .tributeComposer button{background:#bdcfd9;color:#203340}
+@media(prefers-reduced-motion:reduce){.waitingLamp,.waitingPerson .personPose{animation:none}}
+
+/* Keep the original scene composition; adapt its outer demo frame to the app. */
+html,body{height:100%;background:#eef2ee}.wrapper{display:block;max-width:480px;height:100%;padding:0;margin:auto}.left{display:none}.phone{height:100%;max-width:none;padding:0;border:0;border-radius:0;box-shadow:0 0 50px #15362812}.phoneInner{height:100dvh;border-radius:0;min-height:580px}.header{flex-shrink:0}.footer{flex-shrink:0}.view{min-height:0}.gameScreen,.endingScreen{min-height:0}.content{min-height:0}.teamBtn{transition:transform .15s,background .2s}.teamBtn:active{transform:scale(.96)}.fullBtn{box-shadow:0 4px 0 #a77b3b}.fullBtn:active{transform:translateY(2px)}button:disabled{opacity:.45;cursor:not-allowed}.roomInput{width:100%;background:#152136;color:#eef3fb;border:1px solid #40526d;border-radius:12px;padding:12px;margin-top:12px}.connectionNote{position:absolute;top:54px;left:12px;right:12px;z-index:40;background:#f5d9a0;color:#1a2435;border-radius:10px;padding:9px;font-size:11px;text-align:center}.connectionNote:empty{display:none}
+@media(min-width:600px){.phoneInner{height:100dvh}.wrapper{box-shadow:0 0 70px #20352618}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <aside class="left">
+    <div class="eyebrow">FAN EXPERIENCE / INTERACTIVE DEMO</div>
+    <h1>울고 싶으면 <em>비</em>.<br>기쁘면 <em>해</em>.<br>끝나면 <em>각자의 방식으로</em>.</h1>
+    <p class="desc">검은 화면에 흰 국화가 한 송이씩 놓입니다. 꽃마다 방향과 크기가 달라지고, 여러 번 누르면 화면 전체가 꽃으로 덮입니다.</p>
+    <div class="miniList">
+      <div>• 메인 화면은 <b>풀스크린 야구장</b></div>
+      <div>• 비 / 해 누적에 따라 <b>휴대폰 화면 전체</b>가 어두워지거나 밝아짐</div>
+      <div>• 경기 종료 후 <b>헌화하기</b>를 누르면 장면 안에 꽃이 계속 쌓임</div>
+      <div>• 텍스트는 줄이고 상태 / 아이콘 / 이미지 중심으로 정리</div>
+    </div>
+    <div class="mini">승리하면 댄서 추가 버튼으로 클럽을 채우고 화면을 눌러 폭죽을 터뜨릴 수 있어요. 시연: 팀 선택 → 경기 입장 → 점수 조정 → 비/해 누르기 → 경기 종료 → 헌화하기 연타.</div>
+  </aside>
+
+  <main class="phone">
+    <div class="phoneInner" id="phoneInner">
+      <div class="phoneGlow" id="phoneGlow"></div>
+      <div class="phoneDark" id="phoneDark"></div>
+      <header class="header">
+        <div class="logo">비라도 <span>와라</span></div>
+        <div class="badge" id="headerTag">TEAM SELECT</div>
+      </header>
+
+      <section class="view active" id="v0">
+        <div class="content">
+          <div class="kicker">STEP 01</div>
+          <h2 class="title">응원팀</h2>
+          <p class="sub">하나만 고르기</p>
+          <div class="teamgrid" id="teamGrid"></div>
+          <button class="fullBtn" onclick="go(1)">입장</button>
+        </div>
+      </section>
+
+      <section class="view" id="v1">
+        <div class="content">
+          <button class="back" onclick="go(0)">← 뒤로</button>
+          <div class="kicker">STEP 02</div>
+          <h2 class="title">오늘 경기</h2>
+          <p class="sub"><span id="myTeamTextA">롯데 자이언츠</span> 팬으로 들어갑니다.</p>
+          <div class="fixture">
+            <div class="fixtureTop"><span>공동 기도관</span><span class="pill">OPEN</span></div>
+            <div class="versus">
+              <div class="side"><span id="myIcon">🌊</span><span id="myTeamTextB">롯데 자이언츠</span></div>
+              <div class="vs">VS</div>
+              <div class="side"><span id="oppIcon">🦅</span><span id="oppTeamText">한화 이글스</span></div>
+            </div>
+            <div class="fixtureFoot">18:30 · 사직 야구장</div>
+            <div class="fixtureMeta">지는 팀은 비 · 이기는 팀은 해</div>
+          </div>
+          <label for="sharedRoom" style="font-size:12px">친구와 같은 룸 이름으로 입장하세요</label><input class="roomInput" id="sharedRoom" value="sajik-01" maxlength="40" aria-label="룸 이름"><button class="fullBtn" onclick="enterArena()">경기장 입장</button>
+          <button class="subBtn" onclick="randomOpponent()">상대 바꾸기</button>
+        </div>
+      </section>
+
+      <section class="view" id="v2">
+        <div class="gameScreen">
+          <div class="scoreTop">
+            <div class="scoreboard">
+              <div class="sbRow">
+                <div class="sideBox">
+                  <div class="teamMark" id="sbMyIcon">🌊</div>
+                  <div>
+                    <div class="teamName" id="sbMyName">롯데 자이언츠</div>
+                    <div class="teamState">내 팀</div>
+                  </div>
+                </div>
+                <div class="scoreBox"><b id="myScore">2</b><span>:</span><b id="oppScore">4</b></div>
+                <div class="sideBox right">
+                  <div>
+                    <div class="teamName" id="sbOppName" style="text-align:right">한화 이글스</div>
+                    <div class="teamState" style="text-align:right">상대</div>
+                  </div>
+                  <div class="teamMark" id="sbOppIcon">🦅</div>
+                </div>
+              </div>
+            </div>
+            <div class="phaseTag" id="inningTag">7회 말 · LIVE</div>
+          </div>
+
+          <div class="roleBanner"><div class="big" id="roleText">💧 비를 부를 차례</div></div>
+
+          <div class="fieldWrap">
+            <svg class="stadium" viewBox="0 0 390 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="세로형 야구장 벡터 화면">
+              <defs>
+                <linearGradient id="skyGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#5d829e"/>
+                  <stop offset="47%" stop-color="#9fc2d6"/>
+                  <stop offset="100%" stop-color="#27415a"/>
+                </linearGradient>
+                <linearGradient id="standGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#42596d"/>
+                  <stop offset="100%" stop-color="#24364a"/>
+                </linearGradient>
+              </defs>
+              <rect width="390" height="760" fill="url(#skyGrad)"/>
+              <circle cx="298" cy="110" r="44" fill="#ffec9a" opacity=".88"/>
+              <g fill="#d9e2ea" opacity=".95">
+                <ellipse cx="86" cy="128" rx="55" ry="20"/>
+                <ellipse cx="118" cy="110" rx="34" ry="23"/>
+                <ellipse cx="221" cy="170" rx="46" ry="17"/>
+                <ellipse cx="250" cy="152" rx="30" ry="18"/>
+              </g>
+              <path d="M0 314 Q195 208 390 314 V760 H0Z" fill="url(#standGrad)"/>
+              <path d="M0 392 Q195 260 390 392 V760 H0Z" fill="#61788b" opacity=".9"/>
+              <g fill="#b9c6d0" opacity=".85">
+                <circle cx="18" cy="374" r="2.2"/><circle cx="36" cy="362" r="2.2"/><circle cx="54" cy="350" r="2.2"/><circle cx="72" cy="339" r="2.2"/><circle cx="90" cy="329" r="2.2"/><circle cx="108" cy="320" r="2.2"/><circle cx="126" cy="313" r="2.2"/><circle cx="144" cy="306" r="2.2"/><circle cx="162" cy="302" r="2.2"/><circle cx="180" cy="298" r="2.2"/><circle cx="198" cy="298" r="2.2"/><circle cx="216" cy="300" r="2.2"/><circle cx="234" cy="304" r="2.2"/><circle cx="252" cy="311" r="2.2"/><circle cx="270" cy="319" r="2.2"/><circle cx="288" cy="330" r="2.2"/><circle cx="306" cy="341" r="2.2"/><circle cx="324" cy="353" r="2.2"/><circle cx="342" cy="365" r="2.2"/><circle cx="360" cy="377" r="2.2"/>
+              </g>
+              <path d="M18 570 Q195 440 372 570 L390 760 H0Z" fill="#3f7f58"/>
+              <path d="M195 462 L318 586 L195 710 L72 586Z" fill="#bf9b71"/>
+              <path d="M195 480 L288 586 L195 692 L102 586Z" fill="#509562"/>
+              <path d="M195 536 L239 586 L195 636 L151 586Z" fill="#c59f74"/>
+              <path d="M195 562 L209 576 L195 590 L181 576Z" fill="#fff8eb"/>
+              <path d="M181 576 L104 586 M209 576 L286 586" stroke="#f7efe2" stroke-width="2" opacity=".82"/>
+              <g fill="#f8e8cf" stroke="#162739" stroke-width="2">
+                <circle cx="195" cy="535" r="7"/>
+                <path d="M195 542v23m-8-12h16"/>
+                <circle cx="195" cy="620" r="7"/>
+                <path d="M195 627v17m-9-9h18"/>
+                <circle cx="145" cy="588" r="6"/>
+                <circle cx="245" cy="588" r="6"/>
+              </g>
+            </svg>
+          </div>
+          <div class="gameSkyTint" id="gameSkyTint"></div>
+          <div class="gameSunLayer" id="gameSunLayer"></div>
+          <div class="gameRainLayer" id="gameRainLayer"></div>
+          <div class="gameFieldDark" id="gameFieldDark"></div>
+          <div class="floodWater" id="floodWater"><div class="waterSurface"></div><div class="waterShimmer"></div></div>
+          <div class="weatherBurst" id="weatherBurst" aria-hidden="true"></div><div class="chantLayer" id="chantLayer" aria-live="polite"></div>
+
+          <div class="minimalControls">
+            <div class="weatherCount"><span>💧 <b id="tearCount">0</b></span><span>☀️ <b id="sunCount">0</b></span></div>
+            <div class="orbActions">
+              <button class="orb rain" id="rainAction" onclick="addForce('rain')" aria-label="눈물 모으기"><span class="orbIcon">💧</span></button>
+              <button class="orb sun" id="sunAction" onclick="addForce('sun')" aria-label="햇빛 모으기"><span class="orbIcon">☀️</span></button>
+            </div>
+            <div class="underActions"><span id="rainHint">비</span><span id="sunHint">해</span></div>
+          </div>
+          <button class="chantToggle" onclick="toggleChant()" aria-label="한마디 남기기" title="한마디 남기기">✎</button>
+          <form class="chantComposer hidden" id="chantComposer" onsubmit="saveChant(event)">
+            <input id="chantInput" maxlength="42" placeholder="한마디 외치기" aria-label="경기 응원 한마디" autocomplete="off">
+            <button type="submit" aria-label="멘트 설정">↵</button>
+          </form>
+          <button class="demoToggle" onclick="toggleDemo()" aria-label="시연 설정" title="시연 설정">⚙</button>
+          <div class="demoDrawer hidden" id="demoDrawer">
+            <div class="demoTitle">시연 조작 <button onclick="toggleDemo()" aria-label="닫기">×</button></div>
+            <div class="demoButtons"><button onclick="changeScore('my',1)">내 팀 득점</button><button onclick="changeScore('opp',1)">상대 득점</button><button onclick="advanceInning()">다음 이닝</button></div>
+            <button class="demoFinish" onclick="finishGame()">경기 종료 →</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="v3">
+        <div class="content">
+          <button class="back" onclick="go(2)">← 경기장</button>
+          <div class="kicker">STEP 04</div>
+          <div class="resultCard">
+            <div class="bigEmoji" id="resultEmoji">🕯️</div>
+            <div class="resultTitle" id="resultTitle">결국 졌습니다.</div>
+            <div class="resultText" id="resultDesc">비도 해도 경기 결과는 바꾸지 못했습니다.</div>
+            <div class="stats">
+              <div>💧<b id="resultTears">0방울</b></div>
+              <div>☀️<b id="resultSuns">0빛</b></div>
+            </div>
+            <button class="fullBtn" id="resultButton" onclick="go(4)">추모관</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="v4">
+        <div class="endingScreen">
+          <div class="endingTop">
+            <div class="endingChip" id="endingChip">패배 추모관</div>
+            <div class="endingScore"><span id="endingScoreText">2 : 4</span></div>
+          </div>
+
+          <div class="endingScene">
+            <div class="sceneBase"></div>
+            <div class="sceneGlow" id="sceneGlow"></div>
+            <div class="sceneGround"></div>
+            <div class="sceneCenter"></div>
+            <div class="sceneLabel">
+              <div class="emoji" id="sceneEmoji">🕯️</div>
+              <div class="line1" id="sceneTitle">오늘의 승리</div>
+              <div class="line2" id="sceneSub">돌아오지 못함</div>
+            </div>
+            <div class="flowerField" id="flowerField"></div>
+            <div class="victoryScene" id="victoryScene" aria-hidden="true">
+              <div class="winSun"></div>
+              <div class="winField"></div>
+              <div class="winStage">★<span>WIN</span>★</div>
+              <div class="clubGlow"></div><div class="clubMirror"></div><div class="clubLaser a"></div><div class="clubLaser b"></div><div class="clubLaser c"></div><div class="clubFloor"></div><div class="clubHeadline">WE WON!</div><div class="clubDancers" id="clubDancers"></div><div class="clubTapHint">TAP ✦ FIREWORKS</div><div class="clubFireworks" id="clubFireworks"></div><div class="confettiField" id="confettiField"></div>
+            </div>
+            <div class="waitingScene" id="waitingScene" aria-hidden="true">
+              <div class="waitingGlass"></div><div class="waitingLamp"></div>
+              <div class="waitingSign">집에나 갑시다.<small>LAST TRAIN · SERVICE ENDED</small></div>
+              <div class="waitingPlatform"></div>
+              <div class="waitingBench"><div class="back"></div><div class="seat"></div><div class="legs"></div></div>
+              <div class="waitingPeople" id="waitingPeople"></div>
+              <div class="waitingHint">TAP · 하...</div>
+              <div class="waitingSighs" id="waitingSighs"></div>
+            </div>
+            <div class="memorialMessages" id="memorialMessages"></div>
+            <div class="sceneTapHint" id="sceneTapHint">화면을 탭하면 함께 불을 붙입니다</div>
+            <div class="cigaretteMoments" id="cigaretteMoments" aria-hidden="true"></div>
+          </div>
+
+          <div class="endingBottom">
+            <div class="endingCard">
+              <div class="endingMini">
+                <div class="box"><div class="label">남겨진 것</div><div class="value" id="flowerCount">0송이</div></div>
+                <div class="box"><div class="label">오늘 감정</div><div class="value" id="moodType">허무</div></div>
+              </div>
+              <div class="miniBtns">
+                <button class="fullBtn" style="margin-top:0" id="tributeBtn" onclick="addTribute()">헌화하기</button>
+                <button class="ghostBtn" id="clearTributesBtn" onclick="clearTributes()">↺</button>
+              </div>
+              <form class="tributeComposer" id="tributeComposer" onsubmit="submitTribute(event)">
+                <input id="tributeMessage" maxlength="48" placeholder="꽃과 함께 한마디 (선택)" autocomplete="off" aria-label="헌화 메시지">
+                <button type="submit">남기기</button>
+              </form>
+              <div class="guestStrip" id="guestStrip">
+                <div class="guestChip">내일 또 옴</div>
+                <div class="guestChip">비 올 줄 알았는데</div>
+              </div>
+              <div class="inputRow"><input id="guestInput" maxlength="40" placeholder="한마디"><button onclick="addGuest()">추가</button></div>
+              <div class="miniBtns" style="margin-top:12px">
+                <button class="ghostBtn" onclick="go(1)">다른 경기</button>
+                <button class="ghostBtn" onclick="resetDemo()">초기화</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer"><span>비라도 와라 · fan concept</span><span id="progress">01 / 05</span></div>
+      <div class="toast" id="toast"></div><div class="connectionNote" id="connectionNote" role="status"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const teams=[
+  {name:'LG 트윈스',icon:'🔴'},
+  {name:'한화 이글스',icon:'🦅'},
+  {name:'SSG 랜더스',icon:'🚀'},
+  {name:'삼성 라이온즈',icon:'🦁'},
+  {name:'NC 다이노스',icon:'🦖'},
+  {name:'KT 위즈',icon:'🧙'},
+  {name:'롯데 자이언츠',icon:'🌊'},
+  {name:'KIA 타이거즈',icon:'🐯'},
+  {name:'두산 베어스',icon:'🐻'},
+  {name:'키움 히어로즈',icon:'🦸'}
+];
+const $=id=>document.getElementById(id);
+const state={step:0,myTeam:6,oppTeam:1,tears:0,suns:0,myScore:2,oppScore:4,inning:7,half:'말',flowers:0,tributes:[],chants:[],customChant:'',mood:'loss'};
+
+function renderTeamGrid(){
+  $('teamGrid').innerHTML=teams.map((t,i)=>`<button class="teamBtn ${state.myTeam===i?'selected':''}" onclick="selectTeam(${i})"><div class="icon">${t.icon}</div><div class="nm">${t.name}</div></button>`).join('');
+}
+function selectTeam(i){state.myTeam=i;if(state.oppTeam===i)state.oppTeam=(i+1)%teams.length;syncTeams();renderTeamGrid();}
+function randomOpponent(){let c=teams.map((_,i)=>i).filter(i=>i!==state.myTeam);state.oppTeam=c[Math.floor(Math.random()*c.length)];syncTeams();toast('상대 변경');}
+function syncTeams(){
+  $('myTeamTextA').textContent=teams[state.myTeam].name;$('myTeamTextB').textContent=teams[state.myTeam].name;$('oppTeamText').textContent=teams[state.oppTeam].name;
+  $('myIcon').textContent=teams[state.myTeam].icon;$('oppIcon').textContent=teams[state.oppTeam].icon;$('sbMyIcon').textContent=teams[state.myTeam].icon;$('sbOppIcon').textContent=teams[state.oppTeam].icon;
+  $('sbMyName').textContent=teams[state.myTeam].name;$('sbOppName').textContent=teams[state.oppTeam].name;
+}
+function go(step){state.step=step;document.querySelectorAll('.view').forEach((v,i)=>v.classList.toggle('active',i===step));$('progress').textContent=String(step+1).padStart(2,'0')+' / 05';$('headerTag').textContent=['TEAM SELECT','MATCH','SKY ARENA','RESULT','MEMORIAL'][step];if(step===3)renderResult();if(step===4)renderEnding();if(step!==2){$('chantComposer').classList.add('hidden');}}
+function enterArena(){go(2);renderArena();}
+function renderArena(){
+  $('myScore').textContent=state.myScore;$('oppScore').textContent=state.oppScore;$('inningTag').textContent=`${state.inning}회 ${state.half} · LIVE`;
+  const diff=state.myScore-state.oppScore;
+  if(diff<0){$('roleText').innerHTML='💧 비를 부를 차례';$('rainAction').classList.add('reco');$('sunAction').classList.remove('reco');}
+  else if(diff>0){$('roleText').innerHTML='☀️ 해를 지킬 차례';$('sunAction').classList.add('reco');$('rainAction').classList.remove('reco');}
+  else{$('roleText').innerHTML='⛅ 팽팽한 하늘';$('sunAction').classList.add('reco');$('rainAction').classList.add('reco');}
+  $('tearCount').textContent=state.tears.toLocaleString();$('sunCount').textContent=state.suns.toLocaleString();
+  const net=state.suns-state.tears,mag=Math.min(1,Math.abs(net)/180),dark=net<0?Math.min(.9,mag*.96):0,glow=net>0?Math.min(.96,Math.pow(mag,1.15)):0;
+  $('gameRainLayer').style.opacity=net<0?Math.min(.9,mag*.98):0;$('gameFieldDark').style.opacity=dark;$('phoneDark').style.opacity=Math.min(.92,dark*.88);
+  $('gameSkyTint').style.opacity=net>0?Math.min(.85,mag*.72):0;$('gameSunLayer').style.opacity=glow;$('phoneGlow').style.opacity=Math.min(.95,glow*.9);
+  // 양 팀의 눈물-햇빛 세력 차이로 야구장에 물이 차오르거나 물러난다.
+  $('floodWater').style.height=(net<0?Math.min(69,Math.pow(Math.abs(net)/200,.7)*69):0)+'%';
+}
+function spawnParticle(className,vars,life=1600){
+  const p=document.createElement('i');p.className=className;
+  for(const [name,value] of Object.entries(vars)){p.style.setProperty(name,value)}
+  $('weatherBurst').appendChild(p);
+  setTimeout(()=>p.remove(),life);
+}
+function animateWeatherClick(type){
+  const area=$('weatherBurst'),h=area.clientHeight||650;
+  if(type==='rain'){
+    // 한 번 누를 때마다 실제로 물방울이 하늘에서 떨어지는 장면
+    for(let i=0;i<12;i++){
+      spawnParticle('dropParticle',{
+        left:(8+Math.random()*84)+'%',
+        '--delay':(Math.random()*.28)+'s',
+        '--duration':(.65+Math.random()*.4)+'s',
+        '--fall':(h+40)+'px'
+      },1500);
+    }
+    for(let i=0;i<3;i++)spawnParticle('rippleParticle',{
+      '--left':(15+Math.random()*70)+'%',
+      '--bottom':(17+Math.random()*32)+'%'
+    },1000);
+  }else{
+    // 햇빛이 한 줄 한 줄 경기장에 꽂히는 연출
+    for(let i=0;i<6;i++)spawnParticle('sunRayParticle',{
+      '--left':(25+Math.random()*62)+'%',
+      '--width':(25+Math.random()*52)+'px',
+      '--rot':(-32+Math.random()*43)+'deg',
+      '--delay':(i*.055)+'s',
+      '--duration':(1+Math.random()*.45)+'s'
+    },1900);
+  }
+}
+function addForce(type){
+  if(type==='rain')state.tears+=10;else state.suns+=10;
+  renderArena();animateWeatherClick(type);showChant(type);
+}
+const rainLines=['잘 좀 해라 진짜','이 정도면 비 와야지','하늘아 눈치 좀 챙겨','아 그냥 취소해줘','내가 이걸 왜 보고 있지','제발 비 와라','오늘은 없던 일로 하자'];
+const sunLines=['이대로만 가자','해 쨍쨍 부탁','지금 끝내도 좋다','오늘은 좀 한다?','비 절대 오지 마','빛-우리팀','이게 야구지'];
+function toggleChant(){const el=$('chantComposer');el.classList.toggle('hidden');if(!el.classList.contains('hidden'))$('chantInput').focus();}
+function saveChant(e){e.preventDefault();const msg=$('chantInput').value.trim().slice(0,42);$('chantComposer').classList.add('hidden');$('chantInput').value='';if(msg)floatMessage('chantLayer',msg,state.myScore>state.oppScore?'sunText':'');}
+function floatMessage(layer,msg,kind=''){const bubble=document.createElement('div');bubble.className='chantBubble '+kind;bubble.textContent=msg;bubble.style.setProperty('--x',(24+Math.random()*52)+'%');bubble.style.setProperty('--y',(36+Math.random()*25)+'%');$(layer).appendChild(bubble);setTimeout(()=>bubble.remove(),2700);}
+function showChant(type){const lines=type==='rain'?rainLines:sunLines;floatMessage('chantLayer',lines[Math.floor(Math.random()*lines.length)],type==='sun'?'sunText':'');}
+function changeScore(team,delta){if(team==='my')state.myScore+=delta;else state.oppScore+=delta;renderArena();}
+function advanceInning(){if(state.half==='초')state.half='말';else{state.half='초';state.inning=Math.min(12,state.inning+1);}renderArena();}
+function toggleDemo(){$('demoDrawer').classList.toggle('hidden');}
+function finishGame(){$('demoDrawer').classList.add('hidden');go(3);} 
+function renderResult(){
+  $('resultTears').textContent=state.tears.toLocaleString();$('resultSuns').textContent=state.suns.toLocaleString();
+  if(state.myScore<state.oppScore){$('resultEmoji').textContent='🕯️';$('resultTitle').textContent='결국 졌습니다.';$('resultDesc').textContent='비도 해도 경기 결과는 바꾸지 못했습니다.';$('resultButton').textContent='추모관';}
+  else if(state.myScore>state.oppScore){$('resultEmoji').textContent='🌞';$('resultTitle').textContent='오늘은 해가 이겼습니다.';$('resultDesc').textContent='이제는 추모 대신 기념 장면을 채워봅니다.';$('resultButton').textContent='기념관';}
+  else{$('resultEmoji').textContent='🌥️';$('resultTitle').textContent='비겼습니다.';$('resultDesc').textContent='묘하게 찝찝한 하루.';$('resultButton').textContent='기록관';}
+}
+function renderEnding(){
+  const mood=state.myScore<state.oppScore?'loss':state.myScore>state.oppScore?'win':'draw';
+  state.mood=mood;
+  $('endingScoreText').textContent=`${state.myScore} : ${state.oppScore}`;
+  const endingStage=$('v4').querySelector('.endingScreen');
+  endingStage.classList.toggle('isWin',mood==='win');
+  endingStage.classList.toggle('isDraw',mood==='draw');
+  $('sceneTapHint').style.display=mood==='loss'?'block':'none';
+  $('cigaretteMoments').replaceChildren();$('clubFireworks').replaceChildren();$('waitingSighs').replaceChildren();
+  if(mood==='loss'){
+    $('tributeBtn').setAttribute('aria-label','헌화하기');$('endingChip').textContent='패배 추모관';$('sceneEmoji').textContent='🕯️';$('sceneTitle').textContent='오늘의 승리';$('sceneSub').textContent='돌아오지 못함';$('moodType').textContent='허무';$('tributeBtn').textContent='💐';$('tributeMessage').placeholder='꽃과 함께 한마디 (선택)';
+  } else if(mood==='win'){
+    $('endingChip').textContent='승리 클럽';$('moodType').textContent='환호';$('tributeBtn').textContent='🕺';$('tributeBtn').setAttribute('aria-label','댄서 추가');$('tributeMessage').placeholder='오늘의 한마디 (선택)';
+  } else {
+    $('tributeBtn').setAttribute('aria-label','집에 가기');$('endingChip').textContent='무승부 · 심야 대합실';$('sceneEmoji').textContent='🚉';$('sceneTitle').textContent='집에나 갑시다.';$('sceneSub').textContent='오늘도 승부 없음';$('moodType').textContent='한숨';$('tributeBtn').textContent='🚶';$('tributeMessage').placeholder='한숨 한마디 (선택)';
+  }
+  $('flowerCount').textContent=state.flowers+(mood==='loss'?'송이':'명');
+  drawTributes();
+}
+// 참고 이미지처럼 길쭉한 줄기, 초록 잎, 겹겹이 흰 꽃잎을 가진 자체 SVG 국화
+function chrysanthemumSVG(seed){
+  const petals=[];
+  // 겹꽃: 바깥, 중간, 중심의 꽃잎을 조금씩 다르게 회전
+  for(const [layer,n,dist,rx,ry,color] of [[0,20,32,12,27,'#e4e6e4'],[1,18,25,11,23,'#f3f3f0'],[2,15,16,10,18,'#ffffff']]){
+    for(let j=0;j<n;j++){
+      const a=j*360/n + layer*10 + Math.sin(seed+j*3.7)*4;
+      const variance=Math.sin(j*2.31+seed)*3;
+      petals.push(`<ellipse cx="0" cy="${-dist-variance}" rx="${rx}" ry="${ry}" fill="${color}" opacity="${layer===0?.95:1}" transform="rotate(${a})"/>`);
+    }
+  }
+  const leaf='<path d="M0 0 C-13 -18 -28 -28 -39 -31 L-32 -38 L-49 -39 L-44 -48 L-56 -53 L-42 -59 L-50 -69 L-31 -70 L-31 -84 L-18 -75 C-9 -55 -3 -30 0 0Z" fill="#83a894"/>';
+  return `<svg viewBox="0 0 170 242" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+   <path d="M21 229 Q72 181 112 83" stroke="#83a894" stroke-width="8" fill="none" stroke-linecap="round"/>
+   <g transform="translate(74 158) rotate(-33) scale(.82)">${leaf}</g>
+   <g transform="translate(94 123) rotate(148) scale(.66)">${leaf}</g>
+   <g transform="translate(112 79)">${petals.join('')}<circle r="14" fill="#fdfdfb"/><circle r="8" fill="#ffffff"/></g>
+  </svg>`;
+}
+function addTribute(message=''){
+  const count=state.tributes.length;
+  const golden=.61803398875;
+  const x=8+((count*golden+Math.random()*.12)%1)*77;
+  const tier=Math.floor(count/9);
+  const y=Math.max(4,10+Math.min(68,tier*11)+Math.random()*15);
+  const size=.68+Math.random()*.46;
+  const rotation=-53+Math.random()*107;
+  const flower={x,y,size,rotation,seed:Math.random()*100,message:message.trim().slice(0,48)};
+  state.tributes.push(flower);state.flowers=state.tributes.length;
+  $('flowerCount').textContent=state.flowers+(state.mood==='loss'?'송이':'명');
+  appendTribute(flower,count);
+}
+function appendTribute(t,i){
+  if(state.mood==='win'){
+    addDancerVisual(t,i);
+  }else if(state.mood==='draw'){
+    addWaitingPerson(t,i);
+  }else{
+    const el=document.createElement('div');el.className='tribute';
+    el.style.left=t.x+'%';el.style.bottom=t.y+'%';el.style.rotate=t.rotation+'deg';el.style.scale=t.size;el.style.zIndex=String(i+1);
+    el.innerHTML=chrysanthemumSVG(t.seed);$('flowerField').appendChild(el);
+  }
+  if(t.message && !window.__redrawingTributes){
+    const note=document.createElement('div');note.className='memoryNote';note.textContent=t.message;
+    note.style.setProperty('--x',(15+((i*.27)%1)*62)+'%');
+    note.style.setProperty('--y',(24+((i*.37)%1)*50)+'%');
+    note.style.setProperty('--a',(-8+(i*11)%17)+'deg');note.style.zIndex=String(i+10);
+    $('memorialMessages').appendChild(note);setTimeout(()=>note.remove(),3350);
+  }
+}
+function drawTributes(){
+  $('flowerField').replaceChildren();$('confettiField').replaceChildren();$('clubDancers').replaceChildren();$('waitingPeople').replaceChildren();$('memorialMessages').replaceChildren();
+  window.__redrawingTributes=true;state.tributes.forEach(appendTribute);window.__redrawingTributes=false;
+}
+function submitTribute(e){e.preventDefault();const input=$('tributeMessage');addTribute(input.value);input.value='';}
+function clearTributes(){$('memorialMessages').replaceChildren();$('cigaretteMoments').replaceChildren();$('waitingSighs').replaceChildren();state.tributes=[];state.flowers=0;drawTributes();$('flowerCount').textContent='0'+(state.mood==='loss'?'송이':'명');toast('비웠습니다');}
+function addGuest(){const input=$('guestInput');const val=input.value.trim();if(!val)return;const chip=document.createElement('div');chip.className='guestChip';chip.textContent=val;$('guestStrip').prepend(chip);input.value='';toast('추가됨');}
+function resetDemo(){state.tears=0;state.suns=0;state.flowers=0;state.tributes=[];state.customChant='';$('chantInput').value='';$('tributeMessage').value='';state.myScore=2;state.oppScore=4;state.inning=7;state.half='말';$('guestStrip').innerHTML='<div class="guestChip">내일 또 옴</div><div class="guestChip">비 올 줄 알았는데</div>';drawTributes();renderArena();go(1);toast('초기화');}
+let tt;function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2200);}
+
+// 패배 추모관의 검은 화면을 누르면 2개의 담배에 동시에 불이 붙는 짧은 장면.
+// 현실의 흡연 동작은 지원하지 않는 팬덤 풍자 연출입니다.
+function lightTogether(event){
+  if(state.step!==4 || state.mood!=='loss') return;
+  if(event.target.closest('button,form,input,.endingBottom,.endingTop'))return;
+  const stage=$('v4').querySelector('.endingScreen');
+  const rect=stage.getBoundingClientRect();
+  const x=Math.max(116,Math.min(rect.width-116,event.clientX-rect.left));
+  const y=Math.max(205,Math.min(rect.height-180,event.clientY-rect.top));
+  const el=document.createElement('div');el.className='cigaretteMoment';
+  el.style.left=x+'px';el.style.top=y+'px';
+  el.innerHTML=`<svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g transform="rotate(-33 110 115)">
+      <rect x="39" y="105" width="143" height="15" rx="5" fill="#e9eceb"/>
+      <rect x="39" y="105" width="37" height="15" rx="3" fill="#c99461"/>
+      <rect x="175" y="105" width="8" height="15" rx="2" fill="#ff8242" class="ember"/>
+      <path d="M178 103 Q165 80 181 64 Q192 46 176 24" fill="none" stroke="#d3d7da" stroke-width="4" stroke-linecap="round" class="smoke"/>
+    </g>
+  </svg>`;
+  $('cigaretteMoments').appendChild(el);
+  setTimeout(()=>el.remove(),4300);
+}
+$('v4').querySelector('.endingScreen').addEventListener('click',lightTogether);
+
+
+// A dancer is a simple vector-like CSS silhouette: every tap adds one more fan.
+function addDancerVisual(t,i){
+  const el=document.createElement('div');el.className='clubDancer';
+  const colors=['#f884e4','#77e8ff','#e4ff78','#ffbb71','#d0a3ff','#ffffff'];
+  el.style.setProperty('--clr',colors[i%colors.length]);
+  el.style.setProperty('--x',(12+(i*37.7)%77)+'%');
+  el.style.setProperty('--y',(17+(i*13)%28)+'%');
+  el.style.setProperty('--scale',(.7+(i%4)*.13).toFixed(2));
+  el.style.setProperty('--tempo',(.35+(i%5)*.08)+'s');
+  el.innerHTML='<div class="danceBody"><div class="head"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>';
+  $('clubDancers').appendChild(el);
+}
+function launchClubFireworks(event){
+  if(state.step!==4||state.mood!=='win')return;
+  if(event.target.closest('button,form,input,.endingBottom,.endingTop'))return;
+  const stage=$('v4').querySelector('.endingScreen');const bounds=stage.getBoundingClientRect();
+  const x=Math.max(35,Math.min(bounds.width-35,event.clientX-bounds.left));
+  const y=Math.max(75,Math.min(bounds.height-130,event.clientY-bounds.top));
+  const burst=document.createElement('div');burst.className='clubFirework';burst.style.setProperty('--x',x+'px');burst.style.setProperty('--y',y+'px');
+  const colors=['#ff4dcc','#45dfff','#ffe979','#a0ffb0','#ffffff'];
+  for(let i=0;i<20;i++){
+    const e=document.createElement('span');e.className='clubSpark';e.style.setProperty('--a',i*18+'deg');e.style.setProperty('--r',(55+Math.random()*65)+'px');e.style.setProperty('--c',colors[i%colors.length]);burst.appendChild(e);
+  }
+  $('clubFireworks').appendChild(burst);setTimeout(()=>burst.remove(),1100);
+}
+$('v4').querySelector('.endingScreen').addEventListener('click',launchClubFireworks);
+
+
+// 무승부: 집에 가자고 누를수록 대합실에 지친 팬 한 명이 계속 남습니다.
+function addWaitingPerson(t,i){
+  const el=document.createElement('div');el.className='waitingPerson';
+  const palette=['#9aa6b8','#899b83','#ba9d8b','#8397ad','#a589a8','#c4a368','#8497a0'];
+  const skin=['#f1c9a7','#cf9e7b','#e7b58c','#c99172'];
+  const x=12+((i*.61803398875)%1)*76;
+  // 뒤부터 시작해서 천천히 앞쪽까지 채워짐: 매 8명씩 새로운 줄 생성.
+  const row=Math.floor(i/8),bottom=33-Math.min(row,5)*5+(i%3)*2;
+  el.style.setProperty('--left',x.toFixed(2)+'%');
+  el.style.setProperty('--bottom',Math.max(7,bottom)+'%');
+  el.style.setProperty('--scale',(0.72+Math.min(row,6)*.13+(i%4)*.035).toFixed(2));
+  el.style.setProperty('--z',String(10+row));
+  el.style.setProperty('--skin',skin[i%skin.length]);
+  el.style.setProperty('--hair',['#282b31','#4c3831','#333842'][i%3]);
+  el.style.setProperty('--shirt',palette[i%palette.length]);
+  el.style.setProperty('--lean',[-8,6,12,-12][i%4]+'deg');
+  el.style.setProperty('--beat',(i%5)*.3+'s');
+  el.innerHTML=`<div class="personPose"><div class="hair"></div><div class="head"></div><div class="face"></div><div class="body"></div><div class="arm l"></div><div class="arm r"></div><div class="leg l"></div><div class="leg r"></div><div class="shoe l"></div><div class="shoe r"></div>${i%7===4?'<div class="sleep">zZ</div>':''}</div>`;
+  $('waitingPeople').appendChild(el);
+}
+function sighInWaitingRoom(event){
+  if(state.step!==4 || state.mood!=='draw')return;
+  if(event.target.closest('button,form,input,.endingBottom,.endingTop'))return;
+  const rect=$('v4').querySelector('.endingScreen').getBoundingClientRect();
+  const x=Math.max(50,Math.min(rect.width-50,event.clientX-rect.left));
+  const y=Math.max(135,Math.min(rect.height-165,event.clientY-rect.top));
+  const el=document.createElement('div');el.className='waitingSigh';
+  el.style.setProperty('--x',x+'px');el.style.setProperty('--y',y+'px');
+  const words=['하...','에휴','집에 가자...','아...','그냥 집 가자','내 시간...'];
+  el.textContent=words[Math.floor(Math.random()*words.length)];
+  $('waitingSighs').appendChild(el);setTimeout(()=>el.remove(),2200);
+}
+$('v4').querySelector('.endingScreen').addEventListener('click',sighInWaitingRoom);
+
+renderTeamGrid();syncTeams();renderArena();
+</script>
+<script>
+const initial = new URLSearchParams(location.search);
+let sharedRoom = initial.get('room') || 'sajik-01';
+let connected = false, sharedEnded = false, sharedClosed = false;
+const baseGo = go;
+function tellParent(data){parent.postMessage({source:'fan-demo',...data},location.origin)}
+go = function(step){baseGo(step);if(step>=2)tellParent({type:'navigate',screen:['','','pray','result','memorial'][step],room:sharedRoom,team:state.myTeam});};
+enterArena = function(){const value=$('sharedRoom').value.trim();if(!/^[a-zA-Z0-9_-]{1,40}$/.test(value)){toast('룸 이름은 영문, 숫자, -와 _로 입력해주세요');return}sharedRoom=value;go(2)};
+addForce = function(type){if(!connected||sharedClosed)return;animateWeatherClick(type);showChant(type);tellParent({type:'action',action:type})};
+addTribute = function(message=''){if(!connected||!sharedEnded){toast('경기 종료 후 함께 헌화해요');return}tellParent({type:'action',action:'flowers'});if(message)toast('꽃을 보냈어요. 방명록 저장은 준비 중이에요.')};
+clearTributes = function(){toast('함께 놓은 꽃은 지울 수 없어요')};
+changeScore = advanceInning = function(){toast('같은 룸의 경기 시계에 따라 자동 진행돼요')};
+finishGame = function(){if(!sharedEnded){toast('아직 경기가 진행 중이에요');return}go(3)};
+const team=Number(initial.get('team')||6);if(Number.isInteger(team)&&team>=0&&team<teams.length){state.myTeam=team;state.oppTeam=team===1?6:1;syncTeams();renderTeamGrid()}
+randomOpponent=function(){toast('공유 데모 경기는 롯데 vs 한화로 진행돼요')};
+$('sharedRoom').value=sharedRoom;
+const screen=initial.get('screen');if(screen&&screen!=='home'){baseGo({pray:2,result:3,memorial:4}[screen]||2)}
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.source!==parent||event.data?.source!=='fan-host')return;
+ const m=event.data;
+ if(m.type==='error'){$('connectionNote').textContent=m.message;connected=false;return}
+ if(m.type!=='state')return;
+ connected=true;$('connectionNote').textContent='';
+ const r=m.room;state.tears=r.rain;state.suns=r.sun;
+ const elapsed=Math.max(0,(Date.now()-Date.parse(r.started_at))/1000);
+ state.inning=Math.min(9,Math.floor(elapsed/20)+1);state.half='말';sharedClosed=elapsed>=100;sharedEnded=elapsed>=180;
+ state.myScore=state.myTeam===1?4:2;state.oppScore=state.myTeam===1?2:4;
+ renderArena();$('rainAction').disabled=sharedClosed;$('sunAction').disabled=sharedClosed;
+ if(sharedClosed)$('roleText').textContent=sharedEnded?'경기 종료 · 오늘도 함께였어요':'기도 마감 · 경기 결과를 기다려요';
+ $('inningTag').textContent=sharedEnded?'경기 종료':state.inning+'회 말 · LIVE';
+ state.tributes=Array.from({length:Math.min(r.flowers,300)},(_,i)=>({x:8+((i*.61803398875)%1)*77,y:Math.min(78,10+Math.floor(i/9)*11+(i*7)%15),size:.68+(i%9)*.05,rotation:-53+(i*29)%107,seed:i*7.31,message:''}));state.flowers=r.flowers;
+ if(state.step===3){renderResult();if(!sharedEnded){$('resultTitle').textContent='아직 끝나지 않았어요';$('resultDesc').textContent='9회 종료 후 결과가 확정됩니다.'}}
+ if(state.step===4)renderEnding();
+ if(sharedEnded&&state.step===2)go(3);
+});
+tellParent({type:'ready'});
+</script></body>
+</html>
